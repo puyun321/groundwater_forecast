@@ -1,12 +1,23 @@
 # grounwater_forecast
 ```
+此專案内各個檔案之敘述
 1. Daily-based data 為日資料，内有地下水、流量以及雨量資料
 2. tenday-based data 為旬資料，内有地下水、流量以及雨量資料
 3. data preprocessing 為資料前處理用途的程式碼，分別處理日資料以及旬資料
 4. HBV_python 為HBV-light水文模型，用來模擬地下水的水位
 ```
 
-HBV_python内，三個最重要的指標為：<br>
+```
+目前的工作目標：
+a. 寫一個簡單的界面讓專題生也能夠使用
+b. 修正一些參數 (如:台灣並不會融雪，所以此參數的影響應該為0)
+
+未來的目標：
+a. 由於目前的參數都是隨機生成的，所以需要根據觀測的地下水資料來修正參數
+b. 利用ANN或其它演算法修正參數
+```
+
+HBV-light model有三個最重要的指標為：<br>
 a. Precipitation 降雨量<br>
 b. Temperature 溫度 (台灣可以假設成25°C，因爲台灣不會有融雪的情況)<br>
 c. ETpot 蒸發散<br>
