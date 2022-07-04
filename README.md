@@ -17,12 +17,16 @@ a. 由於目前的參數都是隨機生成的，所以需要根據觀測的地�
 b. 利用ANN或其它演算法修正參數
 ```
 
-HBV-light model有三個最重要的指標為：<br>
+# HBV-light model原理：<br>
+![image](https://user-images.githubusercontent.com/41781189/177196537-f791cd21-7ab5-4977-bce7-c62fc27dce58.png)<br>
+其它更詳細的内容請閲讀以下網址：<br>
+http://www.gloh2o.org/hbv/?fbclid=IwAR3z6-TZ1_tiW9NLpTdB8dnKp1bufLjvBk6mnEr6JtqyihRD5k2sAJu7aJU <br>
+
+# HBV-light model有三個最重要的指標以及其它參數<br>
 a. Precipitation 降雨量<br>
 b. Temperature 溫度 (台灣可以假設成25°C，因爲台灣不會有融雪的情況)<br>
 c. ETpot 蒸發散<br>
 d. parameters 為水文模型的參數<br>
-
 
 其中，parameters的詳細内容：<br>
 ![image](https://user-images.githubusercontent.com/41781189/177193162-ad0a0090-cf7e-4e3f-93e2-bde627c53c03.png) <br>
