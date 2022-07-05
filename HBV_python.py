@@ -66,6 +66,7 @@ if location==1:
 else:
     T = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
 
+# 目前資料還沒找好
 watershed_size=[]
 while type(watershed_size)!=int:
     watershed_size = int(input(" 1. small \n 2. large  \n How is your watershed size? (key in number 1 or 2): "))
