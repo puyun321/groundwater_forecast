@@ -61,7 +61,7 @@ while type(location)!=int:
     location = int(input(" 1. Area without melting snow (i.e. Taiwan, SEA countries and etc.) \n 2. Area with melting snow (i.e. U.S., Europe and etc.)  \n Please select your study area (key in number 1 or 2): "))
 if location==1:
     const_T = int(input("Set your temperature: "))
-    T = np.array([25 for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+    T = np.array([const_T  for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
     T = np.reshape(T,(P.shape[0],P.shape[1]))
 else:
     T = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
