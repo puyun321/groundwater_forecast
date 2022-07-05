@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pdb
 from scipy.linalg import kron
-
+import pandas as pd
 
 def hargreaves(tmin, tmax, tmean, lat, day_of_year):
     # Loop to reduce memory usage
@@ -32,16 +32,52 @@ def hargreaves(tmin, tmax, tmean, lat, day_of_year):
 
     return pet
 
-
+#%%
 # def HBV(P, ETpot, T, parameters):
+    
 np.random.seed(111)
-P = np.random.uniform(low=10.0, high=30, size=(20, 10))
 
-T = np.random.uniform(low=10.0, high=20, size=(20, 10))
+P_path=[]
+while len(P_path)==0:
+    P_path = input("!!!The first column of the data should be index!!! \n Please key in your precipitation data path(csv file):\n ")
 
-ETpot = np.random.uniform(low=10.0, high=15, size=(20, 10))
+P = pd.read_csv(P_path,index_col=0)
+# P_date = np.array(P.index)
+P = np.array(P)
+# P = np.random.uniform(low=10.0, high=30, size=(20, 10))
 
-parameters = np.random.uniform(low=0.0, high=1.0, size=(16, 10))
+G_path=[]
+while len(G_path)==0:
+    G_path = input("!!!The first column of the data should be index!!! \n Please key in your groundwater level data path(csv file):\n ")
+    # P_data_structure = int(input(" 1. row: sample number; column: site number (Factor) \n 2. row: site number (Factor); column: sample number\n "
+    #                          +"Please key in your data structure type (key in num 1 or 2):"))
+
+G = pd.read_csv(G_path,index_col=0)
+G_date = np.array(G.index)
+G= np.array(G)
+
+location=[]
+while type(location)!=int:
+    location = int(input(" 1. Area without melting snow (i.e. Taiwan, SEA countries and etc.) \n 2. Area with melting snow (i.e. U.S., Europe and etc.)  \n Please select your study area (key in number 1 or 2): "))
+if location==1:
+    const_T = int(input("Set your temperature: "))
+    T = np.array([25 for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+    T = np.reshape(T,(P.shape[0],P.shape[1]))
+else:
+    T = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
+
+watershed_size=[]
+while type(watershed_size)!=int:
+    watershed_size = int(input(" 1. small \n 2. large  \n How is your watershed size? (key in number 1 or 2): "))
+if watershed_size==1:
+    const_ETpot = int(input("Set your evaporation rate: "))
+    ETpot = np.array([const_ETpot for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+    ETpot = np.reshape(ETpot,(P.shape[0],P.shape[1]))
+else:
+    ETpot = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
+
+
+parameters = np.random.uniform(low=0.0, high=1.0, size=(16, P.shape[1]))
 
 
 # HBV(P, ETpot, T, parameters)
@@ -112,6 +148,8 @@ ETact = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
 Qsim = np.zeros(P.shape, dtype=np.float32) * np.NaN
 Qsim[0, :] = 0.001
 
+#%%
+
 for t in range(1, len(P[:, 0])):
     # Separate precipitation into liquid and solid components
     PRECIP = P[t, :] * parPCORR
@@ -132,7 +170,10 @@ for t in range(1, len(P[:, 0])):
     tosoil = MELTWATER - (parCWH * SNOWPACK)
     tosoil = tosoil.clip(0.0, None)
     MELTWATER = MELTWATER - tosoil
-
+    
+    if location==1:
+        tosoil=0
+    
     # Soil and evaporation
     soil_wetness = (SM / parFC) ** parBETA
     soil_wetness = soil_wetness.clip(0.0, 1.0)
