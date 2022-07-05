@@ -18,7 +18,7 @@ G = pd.read_csv(G_path,index_col=0)
 G_date = np.array(G.index)
 G = np.array(G)
 
-T = np.array([25 for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+T = r"D:\important\research\groundwater_forecast\daily_data\groundwater_l0(processed).csv"s
 T = np.reshape(T,(P.shape[0],P.shape[1]))
 
 #%%

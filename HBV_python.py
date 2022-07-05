@@ -59,21 +59,40 @@ G= np.array(G)
 location=[]
 while type(location)!=int:
     location = int(input(" 1. Area without melting snow (i.e. Taiwan, SEA countries and etc.) \n 2. Area with melting snow (i.e. U.S., Europe and etc.)  \n Please select your study area (key in number 1 or 2): "))
-if location==1:
-    const_T = int(input("Set your temperature: "))
-    T = np.array([const_T  for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
-    T = np.reshape(T,(P.shape[0],P.shape[1]))
-else:
-    T = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
+
+T_path=[]
+while len(T_path)==0:
+    T_path = input("!!!The first column of the data should be index!!! \n Please key in your temperature data path(csv file):\n ")
+
+T = pd.read_csv(T_path,index_col=0)
+T = pd.DataFrame.mean(T,axis=1)
+T= [T[i] for i in range(0,len(T)) for j in range(0,P.shape[1])]
+T= np.reshape(T,(P.shape[0],P.shape[1]))
+
+# if wanna set temperature as constant
+# const_T = int(input("Set your temperature: "))
+# T = np.array([const_T  for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+# T = np.reshape(T,(P.shape[0],P.shape[1]))
+
+# T = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
 
 # 目前資料還沒找好
 watershed_size=[]
 while type(watershed_size)!=int:
     watershed_size = int(input(" 1. small \n 2. large  \n How is your watershed size? (key in number 1 or 2): "))
 if watershed_size==1:
-    const_ETpot = int(input("Set your evaporation rate: "))
-    ETpot = np.array([const_ETpot for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
-    ETpot = np.reshape(ETpot,(P.shape[0],P.shape[1]))
+    ETpot_path=[]
+    while len(ETpot_path)==0:
+        ETpot_path = input("!!!The first column of the data should be index!!! \n Please key in your evaporation data path(csv file):\n ")
+    ETpot = pd.read_csv(ETpot_path,index_col=0)
+    ETpot = pd.DataFrame.mean(ETpot,axis=1)
+    ETpot= [ETpot[i] for i in range(0,len(ETpot)) for j in range(0,P.shape[1])]    
+    ETpot= np.reshape(ETpot,(P.shape[0],P.shape[1]))
+    ETpot = np.array(ETpot)
+    
+    # const_ETpot = int(input("Set your evaporation rate: "))
+    # ETpot = np.array([const_ETpot for i in range(0, P.shape[0]*P.shape[1])]) # set temperature to constant 25 degree celsius
+    # ETpot = np.reshape(ETpot,(P.shape[0],P.shape[1]))
 else:
     ETpot = np.random.uniform(low=10.0, high=20, size=(P.shape[0], P.shape[1]))
 
