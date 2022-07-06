@@ -5,6 +5,7 @@
 2. tenday-based data 為旬資料，内有地下水、流量以及雨量資料
 3. data preprocessing 為資料前處理用途的程式碼，分別處理日資料以及旬資料
 4. HBV_python 為HBV-light水文模型，用來模擬地下水的水位
+5. lstm_HBV 為普運 研究的進度(意要結合LSTM與HBV模型)
 ```
 
 ```
