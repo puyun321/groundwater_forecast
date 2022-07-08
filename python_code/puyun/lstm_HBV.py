@@ -13,7 +13,7 @@ G_path = r"D:\important\research\groundwater_forecast\daily_data\groundwater_l0.
 # G = pd.read_csv(G_path,index_col=0)
 G = pd.read_csv(G_path);G['date'] = pd.to_datetime(G['date']);
 # G = np.array(G);
-G = G.resample('10D',on='date',base=0,loffset='9D').mean()
+G = G.resample('10D',on='date',base=0,loffset='9D').mean() #convert daily data to 10day based
 G_date = np.array(G.index)
 G_station = G.columns
 G_station = pd.Series([G_station[i][8:10] for i in range(0,len(G_station))])
@@ -38,21 +38,21 @@ G = np.array([G.iloc[:,station_index[i]].mean(axis=1) for i in range(0,len(stati
 P_path = r"D:\important\research\groundwater_forecast\daily_data\rainfall.csv"
 # P = pd.read_csv(P_path,index_col=0)
 P = pd.read_csv(P_path);P['date'] = pd.to_datetime(P['date']);
-P = P.resample('10D',on='date',base=0,loffset='9D').mean()
+P = P.resample('10D',on='date',base=0,loffset='9D').mean() #convert daily data to 10day based
 P_station = P.columns
 P = np.array(P)
 
 T_path = r"D:\important\research\groundwater_forecast\daily_data\temperature.csv"
-T = pd.read_csv(T_path,index_col=0)
+# T = pd.read_csv(T_path,index_col=0)
 T = pd.read_csv(T_path);T['date'] = pd.to_datetime(T['date']);
-T = T.resample('10D',on='date',base=0,loffset='9D').mean()
+T = T.resample('10D',on='date',base=0,loffset='9D').mean() #convert daily data to 10day based
 T_station = T.columns
 T = np.array(T)
 
 ETpot_path = r"D:\important\research\groundwater_forecast\daily_data\evaporation_rate.csv"
-ETpot = pd.read_csv(ETpot_path,index_col=0)
+# ETpot = pd.read_csv(ETpot_path,index_col=0)
 ETpot = pd.read_csv(ETpot_path);ETpot['date'] = pd.to_datetime(ETpot['date']);
-ETpot = ETpot.resample('10D',on='date',base=0,loffset='9D').mean()
+ETpot = ETpot.resample('10D',on='date',base=0,loffset='9D').mean() #convert daily data to 10day based
 ETpot_station = ETpot.columns
 ETpot = np.array(ETpot)
 
@@ -78,8 +78,6 @@ ETpot_station_info = pd.DataFrame(np.squeeze(np.array([P_station_info.iloc[P_sta
 ETpot_station_info.columns = G_station_info.columns            
 
 #%%
-import math
-import copy
 from pykrige.ok import OrdinaryKriging
 from pykrige.uk import UniversalKriging
 from scipy.interpolate import griddata
@@ -105,7 +103,8 @@ def interpolate2grid(data,station_info,grid_lon,grid_lat,interpolate_method='lin
 P_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
 P_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
 
-# z1, ss1 = Ordinary_Kriging(pd.DataFrame(P[23, :]),P_station_info,P_grid_lon,P_grid_lat)
+""" Since the Kriging fail to provide a good interpolation, we applied the IDW interpolation method to grid our data"""
+# z1, ss1 = Ordinary_Kriging(pd.DataFrame(P[23, :]),P_station_info,P_grid_lon,P_grid_lat) 
 # z1, ss1 = Universal_Kriging(pd.DataFrame(P[17, :]),P_station_info,P_grid_lon,P_grid_lat)
 
 P_z = [interpolate2grid(pd.DataFrame(P[i, :]),P_station_info,P_grid_lon,P_grid_lat) for i in range(0,len(P))]
@@ -150,53 +149,63 @@ from keras import Model
 from keras.engine.input_layer import Input
 from keras.models import Sequential,load_model
 from keras import backend as K
-from keras.layers import Dense,LSTM,Conv1D,Flatten
+from keras.layers import Dense,LSTM,Conv1D,Flatten,Concatenate
 from keras.layers.core import Activation
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.layers import BatchNormalization
 
-def DNN_model(timestep,G_obs,P_obs,T_obs,output_dimension):
-    inputs1 = Input(shape=(timestep,G_obs.shape[1]))
+def DNN_model(timestep,G_obs,P_obs,T_obs,ETpot_obs):
+    inputs1 = Input(shape=(timestep,G_obs.shape[2]))
     output1=LSTM(36,stateful=False,return_sequences=True)(inputs1)
     output1=LSTM(36,stateful=False,return_sequences=False)(output1)
     output1=Flatten()(output1)
-    output1=Dense(16, activation='linear')(output1)
+    output_1=Dense(1, activation='linear')(output1) # 還有兩個參數還未被用到
+    output_2=Dense(1, activation='linear')(output1) # 還有兩個參數還未被用到
+    output_3=Dense(1, activation='linear')(output1) # 還有兩個參數還未被用到
+  
     
     inputs2 = Input(shape=(P_obs.shape[1]))
-    output2 = Dense(P_obs.shape[1], activation='linear')(inputs2)
+    HBV_input2 = Dense(P_obs.shape[1], activation='linear')(inputs2)
 
-    inputs3 = Input(shape=(G_obs.shape[1]))
-    output3 = Dense(P_obs.shape[1], activation='linear')(inputs3)    
+    inputs3 = Input(shape=(T_obs.shape[1]))
+    HBV_input3 = Dense(T_obs.shape[1], activation='linear')(inputs3)    
     
-    inputs4 = Input(shape=(T_obs.shape[1]))
-    output4 = Dense(T_obs.shape[1], activation='linear')(inputs4)  
+    inputs4 = Input(shape=(ETpot_obs.shape[1]))
+    HBV_input4 = Dense(ETpot_obs.shape[1], activation='linear')(inputs4)  
     
-    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=[output1,output2,output3,output4])
+    output = Concatenate(axis=-1)([output_1,output_2,output_3,HBV_input2,HBV_input3,HBV_input4]);
+    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=output)
 
     print(model.summary())
     return model 
 
-def HBV_error_function(k_pred,P_obs,T_obs,G_obs):
+def HBV_error_function(G_obs,model_output):
     
-    parameters=k_pred
+    # P_obs=tf.zeros([8], tf.int32);T_obs=tf.zeros([8], tf.int32);ETpot_obs=tf.zeros([8], tf.int32)
+    (parFC, parPERC, parPCORR, P_obs, T_obs, ETpot_obs) = tf.split(model_output, num_or_size_splits=[1,1,1,8,8,8], axis=1)
+    # parFC=model_output1;parPERC=model_output2;parPCORR=model_output3
+
+    np.random.seed(111)
+    parameters = np.random.uniform(low=0.0, high=1.0, size=(11, G_obs.shape[1]))
     parBETA = parameters[0]
-    parCET = parameters[1]
-    parFC = parameters[2]
-    parK0 = parameters[3]
-    parK1 = parameters[4]
-    parK2 = parameters[5]
-    parLP = parameters[6]
-    parMAXBAS = parameters[7]
-    parPERC = parameters[8]
-    parUZL = parameters[9]
-    parPCORR = parameters[10]
-    parTT = parameters[11]
-    parCFMAX = parameters[12]
-    parSFCF = parameters[13]
-    parCFR = parameters[14]
-    parCWH = parameters[15]
+    parK0 = parameters[1]
+    parK1 = parameters[2]
+    parK2 = parameters[3]
+    parLP = parameters[4]
+    parUZL = parameters[5]
+    parTT = parameters[6]
+    parCFMAX = parameters[7]
+    parSFCF = parameters[8]
+    parCFR = parameters[9]
+    parCWH = parameters[10]
+    
+    # parFC = parameters[1]
+    # parPERC = parameters[6]
+    # parPCORR = parameters[8]
+    # parCET = parameters[11]
+    # parMAXBAS = parameters[12]
     
     # Initialize time series of model variables
     SNOWPACK = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
@@ -215,6 +224,9 @@ def HBV_error_function(k_pred,P_obs,T_obs,G_obs):
     RAIN = np.multiply(PRECIP, T_obs >= parTT)
     SNOW = np.multiply(PRECIP, T_obs < parTT)
     SNOW = SNOW * parSFCF
+    
+    PRECIP = tf.multiply(P_obs, parPCORR)
+    
 
     # Snow
     SNOWPACK = SNOWPACK + SNOW
@@ -243,7 +255,7 @@ def HBV_error_function(k_pred,P_obs,T_obs,G_obs):
     SM = SM - excess
     evapfactor = SM / (parLP * parFC)
     evapfactor = evapfactor.clip(0.0, 1.0)
-    ETact = ETpot * evapfactor
+    ETact = ETpot_obs * evapfactor
     ETact = np.minimum(SM, ETact)
     SM = SM - ETact
 
@@ -260,7 +272,8 @@ def HBV_error_function(k_pred,P_obs,T_obs,G_obs):
     SLZ = SLZ - Q2
     Qsim = Q0 + Q1 + Q2
     
-    return Qsim
+    loss  =K.mean((G_obs - Qsim)**2)
+    return loss
     
 #%%
 import os
@@ -274,8 +287,15 @@ if __name__ == '__main__':
     G_multi_input=preprocessing_module.generate_input()
     G_multi_output=preprocessing_module.generate_output()
     
-    model=DNN_model(timestep,G,P,T,output_dimension)
-    
+    model=DNN_model(forecast_timestep,G_input,P_input,T_input,ETpot_input)
+    learning_rate=1e-4
+    adam = Adam(learning_rate=learning_rate)
+    model.compile(optimizer=adam,loss=HBV_error_function)
+    earlystopper = EarlyStopping(monitor='val_loss', patience=15, verbose=0)        
+    save_path=r"D:\important\research\groundwater_forecast\python_code\puyun\model\dlstm.hdf5"
+    checkpoint =ModelCheckpoint(save_path,save_best_only=True)
+    callback_list=[earlystopper,checkpoint]        
+    model.fit([G_input,P_input,T_input,ETpot_input], G_output, epochs=100, batch_size=32,validation_split=0.2,callbacks=callback_list,shuffle=True)
     
     
     
