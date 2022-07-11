@@ -6,7 +6,7 @@
 3. python code内有著所有此研究會用到的程式碼
 3.1 data preprocessing 為資料前處理用途的程式碼，分別處理日資料以及旬資料
 3.2 HBV_python(raw_code) 為學長提供的HBV-light水文模型python代碼，用來模擬地下水的水位
-3.3 HBV_python 為我更改HBV_python(raw_code)後可以為大家提供的程式輸入界面
+3.3 HBV_python(interface) 為我更改HBV_python(raw_code)後可以為大家提供的程式輸入界面
 3.4 lstm_HBV 為普運 研究方向(意要結合LSTM與HBV模型)
 4. 濁水溪.shp為濁水溪流域的shape file檔案，可用此檔案配合空間内插技術(i.e. Kriging, IDW, etc.)來繪製大區域的地下水水位分佈圖
 ```
