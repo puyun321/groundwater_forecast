@@ -143,129 +143,178 @@ T_input=T_z[forecast_timestep-1:-forecast_timestep-1,min_index[:,0],min_index[:,
 ETpot_input=ETpot_z[forecast_timestep-1:-forecast_timestep-1,min_index[:,0],min_index[:,1]]
 
 #%%
-
-
-#%%
 # Deep learning model
 import tensorflow as tf
 from keras import Model
 from keras.engine.input_layer import Input
 from keras.models import Sequential,load_model
 from keras import backend as K
-from keras.layers import Dense,LSTM,Conv1D,Flatten,Concatenate,Lambda,Layer
+from keras.layers import Dense,LSTM,Conv1D,Flatten,Concatenate
 from keras.layers.core import Activation
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
-# from keras.layers import BatchNormalization
+from keras.layers import BatchNormalization
 
-fixed_parameter=((pd.read_csv(r"D:\important\research\groundwater_forecast\python_code\puyun\result\optima_parameter.csv",index_col=0).iloc[:,:-1]).T).astype(np.float32)
-
-
-class HBV_layer(Layer):
-    def __init__(self,**kwargs):
-        super(HBV_layer, self).__init__(**kwargs)
-        
-    def call(self,tensor):
-        def replacenan(t):
-            return tf.where(tf.math.is_nan(t), tf.zeros_like(t), t)
-        
-        (parPCORR, P_obs, T_obs, ETpot_obs) = tf.split(tensor, num_or_size_splits=[8,8,8,8], axis=1)
-        
-        # tf.random.set_seed(111)
-        # parameters = tf.random.uniform(shape=[13, tf.shape(P_obs)[1]],minval=0.0,maxval=1.0)
-        parameters = tf.convert_to_tensor(fixed_parameter,dtype=tf.float32)
-        (parBETA, parFC, parK0, parK1, parK2, parLP, parPERC, parUZL, parTT, parCFMAX, parSFCF, parCFR, parCWH) = tf.split(parameters,num_or_size_splits=13,axis=0)
-        """ Initialize time series of model variables """
-    
-        SNOWPACK = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        MELTWATER = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        SM = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        SUZ = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        SLZ = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        ETact = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
-        Qsim = tf.zeros(tf.shape(P_obs), dtype=tf.float32)
-        # Apply correction factor to precipitation
-        P_obs =  tf.multiply(parPCORR, P_obs)
-        
-        """ Separate precipitation into liquid and solid components """
-    
-        PRECIP = tf.multiply(P_obs, parPCORR)
-        RAIN = tf.where(tf.math.greater_equal(T_obs,parTT),tf.multiply(PRECIP,T_obs), tf.multiply(PRECIP,0))
-        SNOW = tf.where(tf.math.less(T_obs, parTT),tf.multiply(PRECIP,T_obs),tf.multiply(PRECIP,0))
-        SNOW = tf.multiply(SNOW,parSFCF)
-        
-        # RAIN_SNOW = tf.cond(tf.math.greater_equal(T_obs,parTT),PRECIP,tf.multiply(PRECIP,parSFCF))
-        """ Snow """
-    
-        SNOWPACK = tf.add(SNOWPACK,SNOW)
-        melt = tf.multiply(parCFMAX,tf.subtract(T_obs,parTT))
-        melt = tf.clip_by_value(melt,0.0, SNOWPACK)
-        MELTWATER = tf.add(MELTWATER,melt)
-        SNOWPACK = tf.subtract(SNOWPACK,melt)
-        refreezing =  tf.multiply(parCFR, tf.multiply(parCFMAX ,tf.subtract(parTT,T_obs)))
-        refreezing =  tf.clip_by_value(refreezing,0.0, MELTWATER)
-        SNOWPACK = tf.add(SNOWPACK,refreezing)
-        MELTWATER = tf.subtract(MELTWATER,refreezing)
-        tosoil = tf.subtract(MELTWATER, tf.multiply(parCWH,SNOWPACK))
-        tosoil = tf.clip_by_value(tosoil,0.0,tosoil)
-        MELTWATER = tf.subtract(MELTWATER,tosoil)
-    
-        ### Caution !!! ###
-        tosoil=0 # Taiwan did not melt snow
-        
-        """ Soil and evaporation """
-            
-        soil_wetness = tf.pow(tf.divide(SM, parFC), parBETA)
-        soil_wetness = replacenan(tf.clip_by_value(soil_wetness,0.0,1.0))
-        recharge = tf.multiply(tf.add(RAIN,tosoil),soil_wetness)
-        SM = tf.subtract(tf.add(tf.add(SM , RAIN),tosoil),recharge)
-        excess = tf.subtract(SM,parFC)
-        excess = tf.clip_by_value(excess,0.0,excess)
-        SM = tf.subtract(SM,excess)
-        evapfactor = tf.divide(SM, tf.multiply(parLP, parFC))
-        evapfactor = tf.clip_by_value(evapfactor,0.0,1.0)
-        ETact = tf.multiply(ETpot_obs, evapfactor)
-        ETact = tf.minimum(SM, ETact)
-        SM = tf.subtract(SM, ETact)
-    
-        """ Groundwater boxes """
-       
-        SUZ = tf.add(SUZ,tf.add(recharge,excess))
-        PERC  = tf.minimum(SUZ, parPERC)
-        SUZ = tf.subtract(SUZ, PERC)
-        Q0 = tf.multiply(parK0,tf.maximum(tf.subtract(SUZ,parUZL), 0.0))
-        SUZ = tf.subtract(SUZ,Q0)
-        Q1 = tf.multiply(parK1, SUZ)
-        SUZ = tf.subtract(SUZ, Q1)
-        SLZ = tf.add(SLZ, PERC)
-        Q2 = tf.multiply(parK2, SLZ)
-        SLZ =tf.subtract(SLZ, Q2)
-        Qsim = tf.add(Q0, tf.add(Q1,Q2))
-    
-        return Qsim
-            
 def DNN_model(timestep,G_obs,P_obs,T_obs,ETpot_obs):
     inputs1 = Input(shape=(timestep,G_obs.shape[2]))
     output1=LSTM(36,stateful=False,return_sequences=True)(inputs1)
     output1=LSTM(36,stateful=False,return_sequences=False)(output1)
     output1=Flatten()(output1)
-    # output1=RepeatVector()(output1)
     output_1=Dense(G_obs.shape[2], activation='linear')(output1) # 還有兩個參數還未被用到
+    output_2=Dense(G_obs.shape[2], activation='linear')(output1) # 還有兩個參數還未被用到
+    output_3=Dense(G_obs.shape[2], activation='linear')(output1) # 還有兩個參數還未被用到
+  
     
     inputs2 = Input(shape=(P_obs.shape[1]))
-    inputs3 = Input(shape=(T_obs.shape[1]))    
-    inputs4 = Input(shape=(ETpot_obs.shape[1]))
-        
-    output = Concatenate(axis=-1)([output_1,inputs2,inputs3,inputs4]);
-    simulate_layer = HBV_layer()(output)
-    # final_output = Concatenate(axis=-1)([simulate_layer,output1]);
+    HBV_input2 = Dense(P_obs.shape[1], activation='linear')(inputs2)
+
+    inputs3 = Input(shape=(T_obs.shape[1]))
+    HBV_input3 = Dense(T_obs.shape[1], activation='linear')(inputs3)    
     
-    final_output = Dense(G_obs.shape[2])(simulate_layer)
-    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=final_output)
+    inputs4 = Input(shape=(ETpot_obs.shape[1]))
+    HBV_input4 = Dense(ETpot_obs.shape[1], activation='linear')(inputs4)  
+    
+    output = Concatenate(axis=1)([output_1,output_2,output_3,HBV_input2,HBV_input3,HBV_input4]);
+    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=output)
 
     print(model.summary())
     return model 
+
+def HBV_error_function(G_obs,model_output):
+    
+    (parFC, parPERC, parPCORR, P_obs, T_obs, ETpot_obs) = tf.split(model_output, num_or_size_splits=[G_obs.shape[1],G_obs.shape[1],G_obs.shape[1],8,8,8], axis=1)
+    # parFC=model_output1;parPERC=model_output2;parPCORR=model_output3
+
+    # np.random.seed(111)
+    # parameters = np.random.uniform(low=0.0, high=1.0, size=(11, G_obs.shape[1]))
+    # parBETA = parameters[0]
+    # parK0 = parameters[1]
+    # parK1 = parameters[2]
+    # parK2 = parameters[3]
+    # parLP = parameters[4]
+    # parUZL = parameters[5]
+    # parTT = parameters[6]
+    # parCFMAX = parameters[7]
+    # parSFCF = parameters[8]
+    # parCFR = parameters[9]
+    # parCWH = parameters[10]
+    
+    # parFC = parameters[1]
+    # parPERC = parameters[6]
+    # parPCORR = parameters[8]
+    # parCET = parameters[11]
+    # parMAXBAS = parameters[12]
+    
+    tf.random.set_seed(111)
+    parameters = tf.random.uniform(shape=[11, G_obs.shape[1]],minval=0.0,maxval=1.0)
+    (parBETA, parK0, parK1, parK2, parLP, parUZL, parTT, parCFMAX, parSFCF, parCFR, parCWH) = tf.split(parameters,num_or_size_splits=11,axis=0)
+    
+    """ Initialize time series of model variables """
+    # SNOWPACK = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # MELTWATER = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # SM = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # SUZ = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # SLZ = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # ETact = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
+    # Qsim = np.zeros(P_obs.shape, dtype=np.float32) * np.NaN
+
+
+    SNOWPACK = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    MELTWATER = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    SM = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    SUZ = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    SLZ = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    ETact = tf.add(tf.zeros(parBETA.shape, dtype=tf.float32),0.001)
+    Qsim = tf.zeros(P_obs.shape, dtype=tf.float32)
+    # Apply correction factor to precipitation
+    # P = np.tile(parPCORR, (len(P[:, 0]), 1)) * P
+    
+    """ Separate precipitation into liquid and solid components """
+    # PRECIP = P_obs * parPCORR
+    # RAIN = np.multiply(PRECIP, T_obs >= parTT)
+    # SNOW = np.multiply(PRECIP, T_obs < parTT)
+    # SNOW = SNOW * parSFCF
+    
+    PRECIP = tf.multiply(P_obs, parPCORR)
+    RAIN = tf.cond(T_obs >= parTT,PRECIP)
+    SNOW = tf.cond(T_obs < parTT,PRECIP)
+    SNOW = tf.multiply(SNOW,parSFCF)
+
+    """ Snow """
+    # SNOWPACK = SNOWPACK + SNOW
+    # melt = parCFMAX * (T_obs - parTT)
+    # melt = melt.clip(0.0, SNOWPACK)
+    # MELTWATER = MELTWATER + melt
+    # SNOWPACK = SNOWPACK - melt
+    # refreezing = parCFR * parCFMAX * (parTT - T_obs)
+    # refreezing = refreezing.clip(0.0, MELTWATER)
+    # SNOWPACK = SNOWPACK + refreezing
+    # MELTWATER = MELTWATER - refreezing
+    # tosoil = MELTWATER - (parCWH * SNOWPACK)
+    # tosoil = tosoil.clip(0.0, None)
+    # MELTWATER = MELTWATER - tosoil
+
+    SNOWPACK = tf.add(SNOWPACK,SNOW)
+    melt = tf.multiply(parCFMAX,tf.subtract(T_obs,parTT))
+    melt = tf.cilp_by_value(melt,0.0, SNOWPACK)
+    MELTWATER = tf.add(MELTWATER,melt)
+    SNOWPACK = tf.subtract(SNOWPACK,melt)
+    refreezing =  tf.multiply(parCFR, tf.multiply(parCFMAX ,tf.subtract(parTT,T_obs)))
+    refreezing =  tf.cilp_by_value(refreezing,0.0, MELTWATER)
+    SNOWPACK = tf.add(SNOWPACK,refreezing)
+    MELTWATER = tf.subtract(MELTWATER,refreezing)
+    tosoil = tf.subtract(MELTWATER, tf.multiply(parCWH,SNOWPACK))
+    tosoil = tf.cilp_by_value(tosoil,0.0)
+    MELTWATER = tf.subtract(MELTWATER,tosoil)
+
+    ### Caution !!! ###
+    tosoil=0 # Taiwan did not melt snow
+    
+    """ Soil and evaporation """
+    # soil_wetness = (SM / parFC) ** parBETA
+    # soil_wetness = soil_wetness.clip(0.0, 1.0)
+    # recharge = (RAIN + tosoil) * soil_wetness
+    # SM = SM + RAIN + tosoil - recharge
+    # excess = SM - parFC
+    # excess = excess.clip(0.0, None)
+    # SM = SM - excess
+    # evapfactor = SM / (parLP * parFC)
+    # evapfactor = evapfactor.clip(0.0, 1.0)
+    # ETact = ETpot_obs * evapfactor
+    # ETact = np.minimum(SM, ETact)
+    # SM = SM - ETact
+    
+    soil_wetness = tf.pow(tf.divide(SM, parFC), parBETA)
+    soil_wetness = tf.cilp_by_value(soil_wetness,0.0,1.0)
+    recharge = tf.multiply(tf.add(RAIN,tosoil),soil_wetness)
+    SM = tf.subtract(tf.add(tf.add(SM , RAIN),tosoil))
+    excess = tf.subtract(SM,parFC)
+    excess = tf.clip_by_value(excess,0.0)
+    SM = tf.subtract(SM,excess)
+    evapfactor = tf.divide(SM, tf.multiply(parLP, parFC))
+    evapfactor = tf.clip_by_value(evapfactor,0.0,1.0)
+    ETact = tf.multiply(ETpot_obs, evapfactor)
+    ETact = tf.minimum(SM, ETact)
+    SM = tf.subtract(SM, ETact)
+
+    """ Groundwater boxes """
+    SUZ = SUZ + recharge + excess
+    PERC = np.minimum(SUZ, parPERC)
+    SUZ = SUZ - PERC
+    Q0 = parK0 * np.maximum(SUZ - parUZL, 0.0)
+    SUZ = SUZ - Q0
+    Q1 = parK1 * SUZ
+    SUZ = SUZ - Q1
+    SLZ = SLZ + PERC
+    Q2 = parK2 * SLZ
+    SLZ = SLZ - Q2
+    Qsim = Q0 + Q1 + Q2
+    
+    
+    
+    loss  =K.mean((G_obs - Qsim)**2)
+    return loss
     
 #%%
 import os
@@ -280,22 +329,15 @@ if __name__ == '__main__':
     G_multi_output=preprocessing_module.generate_output()
     
     model=DNN_model(forecast_timestep,G_input,P_input,T_input,ETpot_input)
-    learning_rate=1e-2
+    learning_rate=1e-4
     adam = Adam(learning_rate=learning_rate)
-    model.compile(optimizer=adam,loss='mse')
+    model.compile(optimizer=adam,loss=HBV_error_function)
     earlystopper = EarlyStopping(monitor='val_loss', patience=15, verbose=0)        
     save_path=r"D:\important\research\groundwater_forecast\python_code\puyun\model\dlstm.hdf5"
     checkpoint =ModelCheckpoint(save_path,save_best_only=True)
     callback_list=[earlystopper,checkpoint]        
-    model.fit([G_input,P_input,T_input,ETpot_input], G_output, epochs=100, batch_size=1,validation_split=0.2,callbacks=callback_list,shuffle=True)
-    model=load_model(save_path, custom_objects={'HBV_layer': HBV_layer}) 
+    model.fit([G_input,P_input,T_input,ETpot_input], G_output, epochs=100, batch_size=32,validation_split=0.2,callbacks=callback_list,shuffle=True)
     
-    pred_train=model.predict([G_input,P_input,T_input,ETpot_input], batch_size=1)
     
-#%%
-import os
-os.chdir(r"D:\important\research\research_use_function")
-from error_indicator import error_indicator
-
-train_R2=error_indicator.np_R2(G_output,pred_train)
-train_RMSE=error_indicator.np_RMSE(G_output,pred_train)
+    
+    
