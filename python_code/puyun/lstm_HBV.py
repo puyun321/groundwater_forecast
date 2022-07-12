@@ -59,8 +59,22 @@ ETpot = np.array(ETpot)
 #%%
 import os 
 os.chdir(r"D:\important\research\research_use_function")
+from rescale import normalization
+G_norm_module = normalization(G)
+G_norm = G_norm_module.norm()
+
+P_norm_module = normalization(P)
+P_norm = P_norm_module.norm()
+
+T_norm_module = normalization(T)
+T_norm = T_norm_module.norm()
+
+ETpot_norm_module = normalization(ETpot)
+ETpot_norm = ETpot_norm_module .norm()
+
+#%%
 from multidimensional_reshape import multi_input_output
-G_multi_module=multi_input_output(G,input_timestep=3,output_timestep=3)
+G_multi_module=multi_input_output(G_norm,input_timestep=3,output_timestep=3)
 G_input=G_multi_module.generate_input()
 G_multi_output=G_multi_module.generate_output()
 forecast_timestep=3
@@ -107,10 +121,10 @@ P_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(
 # z1, ss1 = Ordinary_Kriging(pd.DataFrame(P[23, :]),P_station_info,P_grid_lon,P_grid_lat) 
 # z1, ss1 = Universal_Kriging(pd.DataFrame(P[17, :]),P_station_info,P_grid_lon,P_grid_lat)
 
-P_z = [interpolate2grid(pd.DataFrame(P[i, :]),P_station_info,P_grid_lon,P_grid_lat) for i in range(0,len(P))]
+P_z = [interpolate2grid(pd.DataFrame(P_norm[i, :]),P_station_info,P_grid_lon,P_grid_lat) for i in range(0,len(P_norm))]
 P_z = np.nan_to_num(P_z)
-T_z = np.array([interpolate2grid(pd.DataFrame(T[i, :]),T_station_info,P_grid_lon,P_grid_lat,interpolate_method='nearest') for i in range(0,len(T))])
-ETpot_z = np.array([interpolate2grid(pd.DataFrame(ETpot[i, :]),ETpot_station_info,P_grid_lon,P_grid_lat,interpolate_method='nearest') for i in range(0,len(ETpot))])
+T_z = np.array([interpolate2grid(pd.DataFrame(T_norm[i, :]),T_station_info,P_grid_lon,P_grid_lat,interpolate_method='nearest') for i in range(0,len(T_norm))])
+ETpot_z = np.array([interpolate2grid(pd.DataFrame(ETpot_norm[i, :]),ETpot_station_info,P_grid_lon,P_grid_lat,interpolate_method='nearest') for i in range(0,len(ETpot_norm))])
 X,Y = np.meshgrid(P_grid_lon,P_grid_lat)
 
 #%%
@@ -143,24 +157,41 @@ T_input=T_z[forecast_timestep-1:-forecast_timestep-1,min_index[:,0],min_index[:,
 ETpot_input=ETpot_z[forecast_timestep-1:-forecast_timestep-1,min_index[:,0],min_index[:,1]]
 
 #%%
+# split into train and test dataset
+train_index=[i for i in range(0,int(G.shape[0]*0.8))]
+test_index=[i for i in range(int(G.shape[0]*0.8),G.shape[0])]
 
+G_train_input = G_input[train_index,:,:]
+G_train_output = G_output[train_index,:]
+
+P_train_input = P_input[train_index,:]
+T_train_input = T_input[train_index,:]
+ETpot_train_input = ETpot_input[train_index,:]
+
+G_test_input = G_input[test_index,:,:]
+G_test_output = G_output[test_index,:]
+
+P_test_input = P_input[test_index,:]
+T_test_input = T_input[test_index,:]
+ETpot_test_input = ETpot_input[test_index,:]
 
 #%%
 # Deep learning model
 import tensorflow as tf
 from keras import Model
 from keras.engine.input_layer import Input
-from keras.models import Sequential,load_model
-from keras import backend as K
+from keras.models import load_model
+# from keras import backend as K
 from keras.layers import Dense,LSTM,Conv1D,Flatten,Concatenate,Lambda,Layer
-from keras.layers.core import Activation
+# from keras.layers.core import Activation
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 # from keras.layers import BatchNormalization
 
-fixed_parameter=((pd.read_csv(r"D:\important\research\groundwater_forecast\python_code\puyun\result\optima_parameter.csv",index_col=0).iloc[:,:-1]).T).astype(np.float32)
+""" Define HBV layer """
 
+fixed_parameter=((pd.read_csv(r"D:\important\research\groundwater_forecast\python_code\puyun\result\optima_parameter.csv",index_col=0).iloc[:,:-1]).T).astype(np.float32)
 
 class HBV_layer(Layer):
     def __init__(self,**kwargs):
@@ -195,7 +226,6 @@ class HBV_layer(Layer):
         SNOW = tf.where(tf.math.less(T_obs, parTT),tf.multiply(PRECIP,T_obs),tf.multiply(PRECIP,0))
         SNOW = tf.multiply(SNOW,parSFCF)
         
-        # RAIN_SNOW = tf.cond(tf.math.greater_equal(T_obs,parTT),PRECIP,tf.multiply(PRECIP,parSFCF))
         """ Snow """
     
         SNOWPACK = tf.add(SNOWPACK,SNOW)
@@ -244,13 +274,15 @@ class HBV_layer(Layer):
         Qsim = tf.add(Q0, tf.add(Q1,Q2))
     
         return Qsim
+    
+#%%
+""" Define DNN model """
             
 def DNN_model(timestep,G_obs,P_obs,T_obs,ETpot_obs):
     inputs1 = Input(shape=(timestep,G_obs.shape[2]))
     output1=LSTM(36,stateful=False,return_sequences=True)(inputs1)
     output1=LSTM(36,stateful=False,return_sequences=False)(output1)
     output1=Flatten()(output1)
-    # output1=RepeatVector()(output1)
     output_1=Dense(G_obs.shape[2], activation='linear')(output1) # 還有兩個參數還未被用到
     
     inputs2 = Input(shape=(P_obs.shape[1]))
@@ -261,8 +293,8 @@ def DNN_model(timestep,G_obs,P_obs,T_obs,ETpot_obs):
     simulate_layer = HBV_layer()(output)
     # final_output = Concatenate(axis=-1)([simulate_layer,output1]);
     
-    final_output = Dense(G_obs.shape[2])(simulate_layer)
-    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=final_output)
+    # final_output = Dense(G_obs.shape[2])(simulate_layer)
+    model = Model(inputs=[inputs1,inputs2,inputs3,inputs4], outputs=simulate_layer)
 
     print(model.summary())
     return model 
@@ -287,15 +319,20 @@ if __name__ == '__main__':
     save_path=r"D:\important\research\groundwater_forecast\python_code\puyun\model\dlstm.hdf5"
     checkpoint =ModelCheckpoint(save_path,save_best_only=True)
     callback_list=[earlystopper,checkpoint]        
-    model.fit([G_input,P_input,T_input,ETpot_input], G_output, epochs=100, batch_size=1,validation_split=0.2,callbacks=callback_list,shuffle=True)
+    model.fit([G_train_input,P_train_input,T_train_input,ETpot_train_input], G_train_output, epochs=100, batch_size=1,validation_split=0.2,callbacks=callback_list,shuffle=True)
     model=load_model(save_path, custom_objects={'HBV_layer': HBV_layer}) 
     
-    pred_train=model.predict([G_input,P_input,T_input,ETpot_input], batch_size=1)
+    pred_train=model.predict([G_train_input,P_train_input,T_train_input,ETpot_train_input], batch_size=1)
+    pred_train_dernom = G_norm_module.denorm(pred_train)
+    
+    pred_test=model.predict([G_test_input,P_test_input,T_test_input,ETpot_test_input], batch_size=1)
+    pred_test_dernom = G_norm_module.denorm(pred_test)    
     
 #%%
 import os
 os.chdir(r"D:\important\research\research_use_function")
 from error_indicator import error_indicator
 
+G_output_denorm=G_norm_module.denorm(G_output)
 train_R2=error_indicator.np_R2(G_output,pred_train)
 train_RMSE=error_indicator.np_RMSE(G_output,pred_train)

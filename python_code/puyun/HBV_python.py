@@ -84,6 +84,20 @@ ETpot = np.array(ETpot)
 #%%
 import os 
 os.chdir(r"D:\important\research\research_use_function")
+from rescale import normalization
+G_norm_module = normalization(G)
+G_norm = G_norm_module.norm()
+
+P_norm_module = normalization(P)
+P_norm = P_norm_module.norm()
+
+T_norm_module = normalization(T)
+T_norm = T_norm_module.norm()
+
+ETpot_norm_module = normalization(ETpot)
+ETpot_norm = ETpot_norm_module .norm()
+
+#%%
 from multidimensional_reshape import multi_input_output
 G_multi_module=multi_input_output(G,input_timestep=3,output_timestep=3)
 G_input=G_multi_module.generate_input()
