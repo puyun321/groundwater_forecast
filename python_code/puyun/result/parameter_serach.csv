@@ -1,420 +1,144 @@
-﻿differential_evolution step 1: f(x)= 17.5471
-17.54711454
+﻿differential_evolution step 1: f(x)= 201.155
+differential_evolution step 2: f(x)= 199.582
+differential_evolution step 3: f(x)= 199.582
+differential_evolution step 4: f(x)= 199.475
+differential_evolution step 5: f(x)= 198.741
+differential_evolution step 6: f(x)= 198.727
+differential_evolution step 7: f(x)= 198.285
+differential_evolution step 8: f(x)= 198.098
+differential_evolution step 9: f(x)= 198.095
+differential_evolution step 10: f(x)= 198.024
+197.9804288
 TRUE
-[0.81861212 0.21191366 0.64491799 0.74724203 0.00478116 0.7518442
- 0.64009969 0.44417682 0.80278162 0.06398913 0.5264084  0.15395713
- 0.87141978 0.36728292]
-differential_evolution step 1: f(x)= 10.226
-differential_evolution step 2: f(x)= 10.1841
-differential_evolution step 3: f(x)= 10.1841
-differential_evolution step 4: f(x)= 10.1746
-differential_evolution step 5: f(x)= 10.1746
-differential_evolution step 6: f(x)= 10.1723
-differential_evolution step 7: f(x)= 10.1723
-differential_evolution step 8: f(x)= 10.1723
-differential_evolution step 9: f(x)= 10.1723
-differential_evolution step 10: f(x)= 10.1723
-differential_evolution step 11: f(x)= 10.1723
-differential_evolution step 12: f(x)= 10.1723
-differential_evolution step 13: f(x)= 10.1723
-differential_evolution step 14: f(x)= 10.1723
-differential_evolution step 15: f(x)= 10.1723
-differential_evolution step 16: f(x)= 10.1723
-differential_evolution step 17: f(x)= 10.1723
-differential_evolution step 18: f(x)= 10.1723
-differential_evolution step 19: f(x)= 10.1723
-differential_evolution step 20: f(x)= 10.1723
-differential_evolution step 21: f(x)= 10.1723
-differential_evolution step 22: f(x)= 10.1723
-differential_evolution step 23: f(x)= 10.1723
-differential_evolution step 24: f(x)= 10.1723
-differential_evolution step 25: f(x)= 10.1723
-differential_evolution step 26: f(x)= 10.1723
-differential_evolution step 27: f(x)= 10.1723
-differential_evolution step 28: f(x)= 10.1723
-differential_evolution step 29: f(x)= 10.1722
-differential_evolution step 30: f(x)= 10.1722
-differential_evolution step 31: f(x)= 10.1722
-differential_evolution step 32: f(x)= 10.1722
-differential_evolution step 33: f(x)= 10.1722
-differential_evolution step 34: f(x)= 10.1722
-differential_evolution step 35: f(x)= 10.1722
-differential_evolution step 36: f(x)= 10.1722
-differential_evolution step 37: f(x)= 10.1722
-differential_evolution step 38: f(x)= 10.1722
-differential_evolution step 39: f(x)= 10.1722
-differential_evolution step 40: f(x)= 10.1722
-differential_evolution step 41: f(x)= 10.1722
-differential_evolution step 42: f(x)= 10.1722
-differential_evolution step 43: f(x)= 10.1722
-differential_evolution step 44: f(x)= 10.1722
-differential_evolution step 45: f(x)= 10.1722
-differential_evolution step 46: f(x)= 10.1722
-differential_evolution step 47: f(x)= 10.1722
-differential_evolution step 48: f(x)= 10.1722
-differential_evolution step 49: f(x)= 10.1722
-differential_evolution step 50: f(x)= 10.1722
-differential_evolution step 51: f(x)= 10.1722
-differential_evolution step 52: f(x)= 10.1722
-differential_evolution step 53: f(x)= 10.1722
-differential_evolution step 54: f(x)= 10.1722
-differential_evolution step 55: f(x)= 10.1722
-differential_evolution step 56: f(x)= 10.1722
-differential_evolution step 57: f(x)= 10.1722
-differential_evolution step 58: f(x)= 10.1722
-differential_evolution step 59: f(x)= 10.1722
-differential_evolution step 60: f(x)= 10.1722
-differential_evolution step 61: f(x)= 10.1722
-differential_evolution step 62: f(x)= 10.1722
-differential_evolution step 63: f(x)= 10.1722
-differential_evolution step 64: f(x)= 10.1722
-differential_evolution step 65: f(x)= 10.1722
-differential_evolution step 66: f(x)= 10.1722
-differential_evolution step 67: f(x)= 10.1722
-differential_evolution step 68: f(x)= 10.1722
-differential_evolution step 69: f(x)= 10.1722
-differential_evolution step 70: f(x)= 10.1722
-differential_evolution step 71: f(x)= 10.1722
-differential_evolution step 72: f(x)= 10.1722
-differential_evolution step 73: f(x)= 10.1722
-differential_evolution step 74: f(x)= 10.1722
-differential_evolution step 75: f(x)= 10.1722
-differential_evolution step 76: f(x)= 10.1722
-differential_evolution step 77: f(x)= 10.1722
-10.17224471
+[0.35030306 0.25085094 0.82192195 0.06673065 0.13666253 0.16507845
+ 0.21035398 0.78998907 0.98978547 0.51205352 0.66552655 0.60857226]
+differential_evolution step 1: f(x)= 152.034
+differential_evolution step 2: f(x)= 152.034
+differential_evolution step 3: f(x)= 151.636
+differential_evolution step 4: f(x)= 151.501
+differential_evolution step 5: f(x)= 151.501
+differential_evolution step 6: f(x)= 150.934
+differential_evolution step 7: f(x)= 150.727
+differential_evolution step 8: f(x)= 150.576
+differential_evolution step 9: f(x)= 150.576
+differential_evolution step 10: f(x)= 150.455
+differential_evolution step 11: f(x)= 150.398
+differential_evolution step 12: f(x)= 150.398
+150.3934874
 TRUE
-[0.66476363 0.14159615 0.16941843 0.0711888  0.93631356 0.32467283
- 1.         0.50963783 0.55611943 0.30695118 0.67278952 0.60837076
- 0.66096896 0.82368321]
-differential_evolution step 1: f(x)= 27.4532
-differential_evolution step 2: f(x)= 27.4246
-differential_evolution step 3: f(x)= 27.4159
-differential_evolution step 4: f(x)= 27.3911
-differential_evolution step 5: f(x)= 27.3911
-differential_evolution step 6: f(x)= 27.3878
-differential_evolution step 7: f(x)= 27.384
-differential_evolution step 8: f(x)= 27.384
-differential_evolution step 9: f(x)= 27.384
-differential_evolution step 10: f(x)= 27.3836
-differential_evolution step 11: f(x)= 27.3836
-differential_evolution step 12: f(x)= 27.3836
-differential_evolution step 13: f(x)= 27.3834
-differential_evolution step 14: f(x)= 27.3833
-differential_evolution step 15: f(x)= 27.3833
-differential_evolution step 16: f(x)= 27.3833
-differential_evolution step 17: f(x)= 27.3833
-differential_evolution step 18: f(x)= 27.3833
-differential_evolution step 19: f(x)= 27.3832
-differential_evolution step 20: f(x)= 27.3832
-differential_evolution step 21: f(x)= 27.3832
-differential_evolution step 22: f(x)= 27.3832
-differential_evolution step 23: f(x)= 27.3832
-differential_evolution step 24: f(x)= 27.3832
-differential_evolution step 25: f(x)= 27.3832
-differential_evolution step 26: f(x)= 27.3832
-differential_evolution step 27: f(x)= 27.3832
-differential_evolution step 28: f(x)= 27.3832
-differential_evolution step 29: f(x)= 27.3832
-differential_evolution step 30: f(x)= 27.3832
-differential_evolution step 31: f(x)= 27.3832
-differential_evolution step 32: f(x)= 27.3832
-differential_evolution step 33: f(x)= 27.3832
-differential_evolution step 34: f(x)= 27.3832
-differential_evolution step 35: f(x)= 27.3832
-differential_evolution step 36: f(x)= 27.3832
-differential_evolution step 37: f(x)= 27.3832
-differential_evolution step 38: f(x)= 27.3832
-differential_evolution step 39: f(x)= 27.3832
-differential_evolution step 40: f(x)= 27.3832
-differential_evolution step 41: f(x)= 27.3832
-differential_evolution step 42: f(x)= 27.3832
-differential_evolution step 43: f(x)= 27.3832
-differential_evolution step 44: f(x)= 27.3832
-differential_evolution step 45: f(x)= 27.3832
-differential_evolution step 46: f(x)= 27.3832
-differential_evolution step 47: f(x)= 27.3832
-differential_evolution step 48: f(x)= 27.3832
-differential_evolution step 49: f(x)= 27.3832
-differential_evolution step 50: f(x)= 27.3832
-differential_evolution step 51: f(x)= 27.3832
-differential_evolution step 52: f(x)= 27.3832
-differential_evolution step 53: f(x)= 27.3832
-differential_evolution step 54: f(x)= 27.3832
-differential_evolution step 55: f(x)= 27.3832
-differential_evolution step 56: f(x)= 27.3832
-differential_evolution step 57: f(x)= 27.3832
-differential_evolution step 58: f(x)= 27.3832
-differential_evolution step 59: f(x)= 27.3832
-differential_evolution step 60: f(x)= 27.3832
-differential_evolution step 61: f(x)= 27.3832
-differential_evolution step 62: f(x)= 27.3832
-differential_evolution step 63: f(x)= 27.3832
-differential_evolution step 64: f(x)= 27.3832
-differential_evolution step 65: f(x)= 27.3832
-differential_evolution step 66: f(x)= 27.3832
-differential_evolution step 67: f(x)= 27.3832
-27.3831848
+[0.22478951 0.36912767 0.7913962  0.05482099 0.09453717 0.16321762
+ 0.27781934 0.28119819 0.38552018 0.46250355 0.12150285 0.12404394]
+differential_evolution step 1: f(x)= 198.55
+differential_evolution step 2: f(x)= 198.55
+differential_evolution step 3: f(x)= 198.55
+differential_evolution step 4: f(x)= 198.07
+differential_evolution step 5: f(x)= 197.053
+differential_evolution step 6: f(x)= 197.053
+differential_evolution step 7: f(x)= 197.053
+differential_evolution step 8: f(x)= 196.879
+differential_evolution step 9: f(x)= 196.855
+196.7544542
 TRUE
-[0.12426846 0.35189568 0.05890329 0.02223826 0.62212122 0.69284254
- 1.         0.21674927 0.63582692 0.56030281 0.53783112 0.2064225
- 0.68260616 0.5170481 ]
-differential_evolution step 1: f(x)= 189.378
-differential_evolution step 2: f(x)= 189.378
-differential_evolution step 3: f(x)= 189.378
-differential_evolution step 4: f(x)= 189.365
-differential_evolution step 5: f(x)= 189.365
-differential_evolution step 6: f(x)= 189.362
-differential_evolution step 7: f(x)= 189.362
-differential_evolution step 8: f(x)= 189.362
-differential_evolution step 9: f(x)= 189.362
-differential_evolution step 10: f(x)= 189.362
-differential_evolution step 11: f(x)= 189.362
-differential_evolution step 12: f(x)= 189.362
-differential_evolution step 13: f(x)= 189.362
-differential_evolution step 14: f(x)= 189.362
-differential_evolution step 15: f(x)= 189.362
-differential_evolution step 16: f(x)= 189.362
-differential_evolution step 17: f(x)= 189.362
-differential_evolution step 18: f(x)= 189.362
-differential_evolution step 19: f(x)= 189.362
-differential_evolution step 20: f(x)= 189.362
-differential_evolution step 21: f(x)= 189.362
-differential_evolution step 22: f(x)= 189.362
-differential_evolution step 23: f(x)= 189.362
-differential_evolution step 24: f(x)= 189.362
-differential_evolution step 25: f(x)= 189.362
-differential_evolution step 26: f(x)= 189.362
-differential_evolution step 27: f(x)= 189.362
-differential_evolution step 28: f(x)= 189.362
-differential_evolution step 29: f(x)= 189.362
-differential_evolution step 30: f(x)= 189.362
-differential_evolution step 31: f(x)= 189.362
-differential_evolution step 32: f(x)= 189.362
-differential_evolution step 33: f(x)= 189.362
-differential_evolution step 34: f(x)= 189.362
-differential_evolution step 35: f(x)= 189.362
-differential_evolution step 36: f(x)= 189.362
-differential_evolution step 37: f(x)= 189.362
-differential_evolution step 38: f(x)= 189.362
-differential_evolution step 39: f(x)= 189.362
-differential_evolution step 40: f(x)= 189.362
-differential_evolution step 41: f(x)= 189.362
-differential_evolution step 42: f(x)= 189.362
-differential_evolution step 43: f(x)= 189.362
-differential_evolution step 44: f(x)= 189.362
-differential_evolution step 45: f(x)= 189.362
-differential_evolution step 46: f(x)= 189.362
-differential_evolution step 47: f(x)= 189.362
-differential_evolution step 48: f(x)= 189.362
-differential_evolution step 49: f(x)= 189.362
-differential_evolution step 50: f(x)= 189.362
-differential_evolution step 51: f(x)= 189.362
-differential_evolution step 52: f(x)= 189.362
-differential_evolution step 53: f(x)= 189.362
-differential_evolution step 54: f(x)= 189.362
-differential_evolution step 55: f(x)= 189.362
-differential_evolution step 56: f(x)= 189.362
-differential_evolution step 57: f(x)= 189.362
-differential_evolution step 58: f(x)= 189.362
-differential_evolution step 59: f(x)= 189.362
-189.3617852
+[0.15801313 0.96273319 0.82487673 0.05906065 0.16106383 0.17902395
+ 0.32476307 0.46423226 0.66535281 0.89304657 0.88910978 0.60383071]
+differential_evolution step 1: f(x)= 21.4718
+differential_evolution step 2: f(x)= 20.9098
+differential_evolution step 3: f(x)= 20.8859
+differential_evolution step 4: f(x)= 20.7009
+differential_evolution step 5: f(x)= 20.7003
+differential_evolution step 6: f(x)= 20.7003
+differential_evolution step 7: f(x)= 20.7003
+differential_evolution step 8: f(x)= 20.7003
+differential_evolution step 9: f(x)= 20.7003
+differential_evolution step 10: f(x)= 20.5633
+differential_evolution step 11: f(x)= 20.5633
+differential_evolution step 12: f(x)= 20.5633
+differential_evolution step 13: f(x)= 20.5633
+20.50042228
 TRUE
-[0.72952447 0.58548416 0.05258163 0.08048045 0.83234619 0.51549924
- 1.         0.82144338 0.78119349 0.67558544 0.51494742 0.74894077
- 0.15569519 0.50072158]
-differential_evolution step 1: f(x)= 169.591
-differential_evolution step 2: f(x)= 169.591
-differential_evolution step 3: f(x)= 169.591
-differential_evolution step 4: f(x)= 169.591
-differential_evolution step 5: f(x)= 169.587
-differential_evolution step 6: f(x)= 169.587
-differential_evolution step 7: f(x)= 169.587
-differential_evolution step 8: f(x)= 169.587
-differential_evolution step 9: f(x)= 169.587
-differential_evolution step 10: f(x)= 169.587
-differential_evolution step 11: f(x)= 169.586
-differential_evolution step 12: f(x)= 169.586
-differential_evolution step 13: f(x)= 169.586
-differential_evolution step 14: f(x)= 169.586
-differential_evolution step 15: f(x)= 169.586
-differential_evolution step 16: f(x)= 169.586
-differential_evolution step 17: f(x)= 169.586
-differential_evolution step 18: f(x)= 169.586
-differential_evolution step 19: f(x)= 169.586
-differential_evolution step 20: f(x)= 169.586
-differential_evolution step 21: f(x)= 169.586
-differential_evolution step 22: f(x)= 169.586
-differential_evolution step 23: f(x)= 169.586
-differential_evolution step 24: f(x)= 169.586
-differential_evolution step 25: f(x)= 169.586
-differential_evolution step 26: f(x)= 169.586
-differential_evolution step 27: f(x)= 169.586
-differential_evolution step 28: f(x)= 169.586
-differential_evolution step 29: f(x)= 169.586
-differential_evolution step 30: f(x)= 169.586
-differential_evolution step 31: f(x)= 169.586
-differential_evolution step 32: f(x)= 169.586
-differential_evolution step 33: f(x)= 169.586
-differential_evolution step 34: f(x)= 169.586
-differential_evolution step 35: f(x)= 169.586
-differential_evolution step 36: f(x)= 169.586
-differential_evolution step 37: f(x)= 169.586
-differential_evolution step 38: f(x)= 169.586
-differential_evolution step 39: f(x)= 169.586
-differential_evolution step 40: f(x)= 169.586
-differential_evolution step 41: f(x)= 169.586
-differential_evolution step 42: f(x)= 169.586
-differential_evolution step 43: f(x)= 169.586
-differential_evolution step 44: f(x)= 169.586
-differential_evolution step 45: f(x)= 169.586
-differential_evolution step 46: f(x)= 169.586
-differential_evolution step 47: f(x)= 169.586
-differential_evolution step 48: f(x)= 169.586
-differential_evolution step 49: f(x)= 169.586
-differential_evolution step 50: f(x)= 169.586
-differential_evolution step 51: f(x)= 169.586
-differential_evolution step 52: f(x)= 169.586
-differential_evolution step 53: f(x)= 169.586
-differential_evolution step 54: f(x)= 169.586
-differential_evolution step 55: f(x)= 169.586
-differential_evolution step 56: f(x)= 169.586
-differential_evolution step 57: f(x)= 169.586
-differential_evolution step 58: f(x)= 169.586
-differential_evolution step 59: f(x)= 169.586
-differential_evolution step 60: f(x)= 169.586
-differential_evolution step 61: f(x)= 169.586
-differential_evolution step 62: f(x)= 169.586
-169.5861184
+[0.19242427 0.4549478  0.58154712 0.18535516 0.         0.
+ 0.46184229 0.82523822 0.         0.59533569 0.53035417 0.09655496]
+differential_evolution step 1: f(x)= 207.874
+differential_evolution step 2: f(x)= 199.089
+differential_evolution step 3: f(x)= 199.089
+differential_evolution step 4: f(x)= 199.089
+differential_evolution step 5: f(x)= 199.036
+differential_evolution step 6: f(x)= 199.036
+differential_evolution step 7: f(x)= 199.036
+differential_evolution step 8: f(x)= 198.796
+differential_evolution step 9: f(x)= 198.137
+differential_evolution step 10: f(x)= 198.137
+differential_evolution step 11: f(x)= 198.137
+differential_evolution step 12: f(x)= 198.092
+differential_evolution step 13: f(x)= 198.051
+197.9804321
 TRUE
-[0.51526889 0.71519996 0.0044868  0.05292591 0.28004729 0.40771131
- 1.         0.49424636 0.95059861 0.49691151 0.94203723 0.23223411
- 0.74188397 0.08959331]
-differential_evolution step 1: f(x)= 174.596
-differential_evolution step 2: f(x)= 174.58
-differential_evolution step 3: f(x)= 174.562
-differential_evolution step 4: f(x)= 174.562
-differential_evolution step 5: f(x)= 174.562
-differential_evolution step 6: f(x)= 174.562
-differential_evolution step 7: f(x)= 174.562
-differential_evolution step 8: f(x)= 174.562
-differential_evolution step 9: f(x)= 174.562
-differential_evolution step 10: f(x)= 174.561
-differential_evolution step 11: f(x)= 174.561
-differential_evolution step 12: f(x)= 174.561
-differential_evolution step 13: f(x)= 174.561
-differential_evolution step 14: f(x)= 174.561
-differential_evolution step 15: f(x)= 174.561
-differential_evolution step 16: f(x)= 174.561
-differential_evolution step 17: f(x)= 174.561
-differential_evolution step 18: f(x)= 174.561
-differential_evolution step 19: f(x)= 174.561
-differential_evolution step 20: f(x)= 174.56
-differential_evolution step 21: f(x)= 174.56
-differential_evolution step 22: f(x)= 174.56
-differential_evolution step 23: f(x)= 174.56
-differential_evolution step 24: f(x)= 174.56
-differential_evolution step 25: f(x)= 174.56
-differential_evolution step 26: f(x)= 174.56
-differential_evolution step 27: f(x)= 174.56
-differential_evolution step 28: f(x)= 174.56
-differential_evolution step 29: f(x)= 174.56
-differential_evolution step 30: f(x)= 174.56
-differential_evolution step 31: f(x)= 174.56
-differential_evolution step 32: f(x)= 174.56
-differential_evolution step 33: f(x)= 174.56
-differential_evolution step 34: f(x)= 174.56
-differential_evolution step 35: f(x)= 174.56
-differential_evolution step 36: f(x)= 174.56
-differential_evolution step 37: f(x)= 174.56
-differential_evolution step 38: f(x)= 174.56
-differential_evolution step 39: f(x)= 174.56
-differential_evolution step 40: f(x)= 174.56
-differential_evolution step 41: f(x)= 174.56
-differential_evolution step 42: f(x)= 174.56
-differential_evolution step 43: f(x)= 174.56
-differential_evolution step 44: f(x)= 174.56
-differential_evolution step 45: f(x)= 174.56
-differential_evolution step 46: f(x)= 174.56
-differential_evolution step 47: f(x)= 174.56
-differential_evolution step 48: f(x)= 174.56
-differential_evolution step 49: f(x)= 174.56
-differential_evolution step 50: f(x)= 174.56
-differential_evolution step 51: f(x)= 174.56
-differential_evolution step 52: f(x)= 174.56
-differential_evolution step 53: f(x)= 174.56
-differential_evolution step 54: f(x)= 174.56
-differential_evolution step 55: f(x)= 174.56
-differential_evolution step 56: f(x)= 174.56
-174.5604646
+[0.10940225 0.89599766 0.8193357  0.07142719 0.11594509 0.18023623
+ 0.75398898 0.99246009 0.24815479 0.92437845 0.18582511 0.49964387]
+differential_evolution step 1: f(x)= 183.01
+differential_evolution step 2: f(x)= 178.942
+differential_evolution step 3: f(x)= 178.942
+differential_evolution step 4: f(x)= 178.942
+differential_evolution step 5: f(x)= 178.942
+differential_evolution step 6: f(x)= 178.942
+differential_evolution step 7: f(x)= 178.711
+differential_evolution step 8: f(x)= 178.711
+differential_evolution step 9: f(x)= 178.711
+differential_evolution step 10: f(x)= 178.711
+differential_evolution step 11: f(x)= 178.711
+178.666677
 TRUE
-[0.39699573 0.55297662 0.13197054 0.02621533 0.66352527 0.29830897
- 1.         0.3774538  0.64787896 0.77819032 0.70243591 0.77327141
- 0.04389007 0.45067544]
-differential_evolution step 1: f(x)= 136.488
-differential_evolution step 2: f(x)= 136.459
-differential_evolution step 3: f(x)= 136.459
-differential_evolution step 4: f(x)= 136.456
-differential_evolution step 5: f(x)= 136.456
-differential_evolution step 6: f(x)= 136.455
-differential_evolution step 7: f(x)= 136.455
-differential_evolution step 8: f(x)= 136.455
-differential_evolution step 9: f(x)= 136.454
-differential_evolution step 10: f(x)= 136.454
-differential_evolution step 11: f(x)= 136.454
-differential_evolution step 12: f(x)= 136.454
-differential_evolution step 13: f(x)= 136.454
-differential_evolution step 14: f(x)= 136.454
-differential_evolution step 15: f(x)= 136.454
-differential_evolution step 16: f(x)= 136.454
-differential_evolution step 17: f(x)= 136.454
-differential_evolution step 18: f(x)= 136.454
-differential_evolution step 19: f(x)= 136.454
-differential_evolution step 20: f(x)= 136.454
-differential_evolution step 21: f(x)= 136.454
-differential_evolution step 22: f(x)= 136.454
-differential_evolution step 23: f(x)= 136.454
-differential_evolution step 24: f(x)= 136.454
-differential_evolution step 25: f(x)= 136.454
-differential_evolution step 26: f(x)= 136.454
-differential_evolution step 27: f(x)= 136.454
-differential_evolution step 28: f(x)= 136.454
-differential_evolution step 29: f(x)= 136.454
-differential_evolution step 30: f(x)= 136.454
-differential_evolution step 31: f(x)= 136.454
-differential_evolution step 32: f(x)= 136.454
-differential_evolution step 33: f(x)= 136.454
-differential_evolution step 34: f(x)= 136.454
-differential_evolution step 35: f(x)= 136.454
-differential_evolution step 36: f(x)= 136.454
-differential_evolution step 37: f(x)= 136.454
-differential_evolution step 38: f(x)= 136.454
-differential_evolution step 39: f(x)= 136.454
-differential_evolution step 40: f(x)= 136.454
-differential_evolution step 41: f(x)= 136.454
-differential_evolution step 42: f(x)= 136.454
-differential_evolution step 43: f(x)= 136.454
-differential_evolution step 44: f(x)= 136.454
-differential_evolution step 45: f(x)= 136.454
-differential_evolution step 46: f(x)= 136.454
-differential_evolution step 47: f(x)= 136.454
-differential_evolution step 48: f(x)= 136.454
-differential_evolution step 49: f(x)= 136.454
-differential_evolution step 50: f(x)= 136.454
-differential_evolution step 51: f(x)= 136.454
-differential_evolution step 52: f(x)= 136.454
-differential_evolution step 53: f(x)= 136.454
-differential_evolution step 54: f(x)= 136.454
-differential_evolution step 55: f(x)= 136.454
-differential_evolution step 56: f(x)= 136.454
-differential_evolution step 57: f(x)= 136.454
-136.4543346
+[0.65931935 0.68451029 0.87807399 0.08058636 0.0855862  0.91910444
+ 0.01165538 0.98008575 0.86192585 0.92241631 0.82770929 0.09626716]
+differential_evolution step 1: f(x)= 28.8119
+differential_evolution step 2: f(x)= 27.5632
+differential_evolution step 3: f(x)= 27.5632
+differential_evolution step 4: f(x)= 27.164
+differential_evolution step 5: f(x)= 27.1132
+differential_evolution step 6: f(x)= 27.1132
+differential_evolution step 7: f(x)= 26.9291
+differential_evolution step 8: f(x)= 26.4772
+differential_evolution step 9: f(x)= 26.4772
+differential_evolution step 10: f(x)= 26.4294
+differential_evolution step 11: f(x)= 26.2256
+differential_evolution step 12: f(x)= 26.178
+differential_evolution step 13: f(x)= 26.178
+differential_evolution step 14: f(x)= 26.178
+differential_evolution step 15: f(x)= 26.178
+differential_evolution step 16: f(x)= 26.1159
+differential_evolution step 17: f(x)= 26.0935
+differential_evolution step 18: f(x)= 26.0838
+differential_evolution step 19: f(x)= 26.0838
+26.0103388
 TRUE
-[0.20489565 0.31725687 0.02494296 0.02370806 0.7275646  0.19420675
- 1.         0.19697412 0.70040397 0.71517858 0.62469669 0.12599798
- 0.66036349 0.68813112]
-differential_evolution step 1: f(x)= 135.38
-135.3800814
+[0.32533915 0.95711011 1.         0.02944789 0.49907123 0.55181877
+ 0.96175991 0.22180909 0.15338888 0.82343733 0.         0.38894925]
+differential_evolution step 1: f(x)= 21.0078
+differential_evolution step 2: f(x)= 20.9829
+differential_evolution step 3: f(x)= 20.7889
+differential_evolution step 4: f(x)= 20.7889
+differential_evolution step 5: f(x)= 20.5649
+differential_evolution step 6: f(x)= 20.5649
+differential_evolution step 7: f(x)= 20.5649
+differential_evolution step 8: f(x)= 20.5649
+differential_evolution step 9: f(x)= 20.5625
+20.50042204
 TRUE
-[0.57627187 0.52590962 0.60273188 0.45751454 0.00157628 0.77517203
- 0.83615108 0.44191403 0.58233695 0.4146937  0.51154177 0.74370354
- 0.51707015 0.20742646]
+[0.89629412 0.1173089  0.59970401 0.17783817 0.         0.
+ 0.96057019 0.77757091 0.         0.7334722  0.88662874 0.40938158]
+differential_evolution step 1: f(x)= 166.283
+differential_evolution step 2: f(x)= 166.283
+differential_evolution step 3: f(x)= 166.283
+differential_evolution step 4: f(x)= 164.542
+differential_evolution step 5: f(x)= 164.542
+differential_evolution step 6: f(x)= 164.542
+differential_evolution step 7: f(x)= 164.542
+differential_evolution step 8: f(x)= 164.542
+differential_evolution step 9: f(x)= 164.542
+differential_evolution step 10: f(x)= 164.542
+differential_evolution step 11: f(x)= 164.542
+differential_evolution step 12: f(x)= 164.542
+164.4967752
+TRUE
+[0.51419801 0.45344679 0.74243388 0.06187878 0.12938434 0.15873053
+ 0.26291106 0.81773692 0.42350735 0.34713748 0.26622626 0.86208071]

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jul 12 13:58:25 2022
+Created on Thu Jul 14 15:52:33 2022
 
 @author: steve
 """
@@ -187,16 +187,8 @@ def IDW_interpolation(data,station_info,grid_lon,grid_lat):
     Z = Z.reshape((xi.shape[0]),(yi.shape[0]))
     return Z
 
-G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
-G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
-
-# G0_z1 = [interpolate2grid(pd.DataFrame(G0_new[i, :]),G0_station_info_new,G_grid_lon,G_grid_lat,interpolate_method='nearest') for i in range(0,len(G0_new))]
-
-# G0_z = np.array([Ordinary_Kriging(pd.DataFrame(G0_new[i, :]),G0_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G0_new))])
-# G1_z = np.array([Ordinary_Kriging(pd.DataFrame(G1_new[i, :]),G1_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G1_new))])
-# G2_z = np.array([Ordinary_Kriging(pd.DataFrame(G2_new[i, :]),G2_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G2_new))])
-# G3_z = np.array([Ordinary_Kriging(pd.DataFrame(G3_new[i, :]),G3_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G3_new))])
-# G4_z = np.array([Ordinary_Kriging(pd.DataFrame(G4_new[i, :]),G4_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G4_new))])
+G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 100)
+G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 100)
 
 G0_z = np.array([IDW_interpolation(np.squeeze(G0_new[i, :]),G0_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G0_new))])
 G1_z = np.array([IDW_interpolation(np.squeeze(G1_new[i, :]),G1_station_info_new,G_grid_lon,G_grid_lat) for i in range(0,len(G1_new))])
@@ -207,10 +199,6 @@ G4_z = np.array([IDW_interpolation(np.squeeze(G4_new[i, :]),G4_station_info_new,
 #%%
 
 """ Since the Kriging fail to provide a good interpolation, we applied the IDW interpolation method to grid our data"""
-
-# P_z = [interpolate2grid(pd.DataFrame(P[i, :]),P_station_info,G_grid_lon,G_grid_lat) for i in range(0,len(P))]
-# T_z = np.array([interpolate2grid(pd.DataFrame(T[i, :]),T_station_info,G_grid_lon,G_grid_lat,interpolate_method='nearest') for i in range(0,len(T))])
-# ETpot_z = np.array([interpolate2grid(pd.DataFrame(ETpot[i, :]),ETpot_station_info,G_grid_lon,G_grid_lat,interpolate_method='nearest') for i in range(0,len(ETpot))])
 
 P_z = [IDW_interpolation(np.squeeze(P[i, :]),P_station_info,G_grid_lon,G_grid_lat) for i in range(0,len(P))]
 P_z = np.nan_to_num(P_z)
@@ -283,137 +271,109 @@ for i in range(0,len(G_grid)):
         P_select_input.append(P_grid[forecast_timestep-1:-forecast_timestep-1:,i])        
         T_select_input.append(T_grid[forecast_timestep-1:-forecast_timestep-1:,i])        
         ETpot_select_input.append(ETpot_z_grid[forecast_timestep-1:-forecast_timestep-1,i])
-
-#%%
-from scipy.optimize import differential_evolution
-
-bounds = [(0,1), (0, 1), (0,1), (0,1), (0,1), (0,1), (0,1), (0,1), (0,1), (0,1), (0,1), (0,1)]
-optima=[[]*1 for i in range(0,len(G_select_output))]
-for station in range(0,len(G_select_output)):
-    G_input=G_select_input[station]
-    G_output=G_select_output[station]
-    P_input,T_input,ETpot_input=P_select_input[station],T_select_input[station],ETpot_select_input[station]
-    
-    def HBV_model(parameter,location=1):
-        parBETA = parameter[0]
-        parFC = parameter[1]
-        parK0 = parameter[2]
-        parK1 = parameter[3]
-        parK2 = parameter[4]
-        parK3 = parameter[5]
-        parLP = parameter[6]
-        parPERC0 = parameter[7]
-        parPERC1 = parameter[8]        
-        parPERC2 = parameter[9]        
-        parUZL = parameter[10]
-        parPCORR = parameter[11]
         
-        if location==1:
-            parTT,parCFMAX,parSFCF,parCFR,parCWH = 0,0,0,0,0
+#%%
+import tensorflow as tf
+from keras import Model
+from keras.engine.input_layer import Input
+from keras.models import load_model
+# from keras import backend as K
+from keras.layers import Dense,LSTM,Conv1D,Flatten,Concatenate,Lambda,Layer
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from keras.optimizers import Adam
+# from keras.layers import BatchNormalization
+
+""" Define HBV layer """
+
+fixed_parameter=((pd.read_csv(r"D:\important\research\groundwater_forecast\python_code\puyun\result\optima_parameter.csv",index_col=0).iloc[:,:-1]).T).astype(np.float32)
+
+class HBV_layer(Layer):
+    def __init__(self,**kwargs):
+        super(HBV_layer, self).__init__(**kwargs)
+        
+    def call(self,tensor):
+        def replacenan(t):
+            return tf.where(tf.math.is_nan(t), tf.zeros_like(t), t)
+        
+        (parPCORR, P_obs, T_obs, ETpot_obs, G_obs_in) = tf.split(tensor, num_or_size_splits=[9,9,9,9,9*5], axis=1)
+        
+        parameters = tf.convert_to_tensor(fixed_parameter,dtype=tf.float32)
+        (parBETA, parFC, parK0, parK1, parK2, parK3, parLP, parPERC0, parPERC1, parPERC2, parUZL) = tf.split(parameters,num_or_size_splits=13,axis=0)
+        (parTT,parCFMAX,parSFCF,parCFR,parCWH) = tf.split(tf.add(tf.zeros(tf.shape(parBETA)*5, dtype=tf.float32),0.001),num_or_size_splits=5,axis=0)
+        """ Initialize time series of model variables """
+    
+        SNOWPACK = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
+        MELTWATER = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
+        SM,SUZ,SLZ1,SLZ2,SLZ3 = tf.split(G_obs_in,num_or_size_splits=5,axis=0)
+        ETact = tf.add(tf.zeros(tf.shape(parBETA), dtype=tf.float32),0.001)
+        Qsim = tf.zeros(tf.shape(P_obs), dtype=tf.float32)
+        # Apply correction factor to precipitation
+        P_obs =  tf.multiply(parPCORR, P_obs)
+        
+        """ Separate precipitation into liquid and solid components """
+    
+        PRECIP = tf.multiply(P_obs, parPCORR)
+        RAIN = tf.where(tf.math.greater_equal(T_obs,parTT),tf.multiply(PRECIP,T_obs), tf.multiply(PRECIP,0))
+        SNOW = tf.where(tf.math.less(T_obs, parTT),tf.multiply(PRECIP,T_obs),tf.multiply(PRECIP,0))
+        SNOW = tf.multiply(SNOW,parSFCF)
+        
+        """ Snow """
+    
+        SNOWPACK = tf.add(SNOWPACK,SNOW)
+        melt = tf.multiply(parCFMAX,tf.subtract(T_obs,parTT))
+        melt = tf.clip_by_value(melt,0.0, SNOWPACK)
+        MELTWATER = tf.add(MELTWATER,melt)
+        SNOWPACK = tf.subtract(SNOWPACK,melt)
+        refreezing =  tf.multiply(parCFR, tf.multiply(parCFMAX ,tf.subtract(parTT,T_obs)))
+        refreezing =  tf.clip_by_value(refreezing,0.0, MELTWATER)
+        SNOWPACK = tf.add(SNOWPACK,refreezing)
+        MELTWATER = tf.subtract(MELTWATER,refreezing)
+        tosoil = tf.subtract(MELTWATER, tf.multiply(parCWH,SNOWPACK))
+        tosoil = tf.clip_by_value(tosoil,0.0,tosoil)
+        MELTWATER = tf.subtract(MELTWATER,tosoil)
+    
+        ### Caution !!! ###
+        tosoil=0 # Taiwan did not melt snow
+        
+        """ Soil and evaporation """
+            
+        soil_wetness = tf.pow(tf.divide(SM, parFC), parBETA)
+        soil_wetness = replacenan(tf.clip_by_value(soil_wetness,0.0,1.0))
+        recharge = tf.multiply(tf.add(RAIN,tosoil),soil_wetness)
+        SM = tf.subtract(tf.add(tf.add(SM , RAIN),tosoil),recharge)
+        excess = tf.subtract(SM,parFC)
+        excess = tf.clip_by_value(excess,0.0,excess)
+        SM = tf.subtract(SM,excess)
+        evapfactor = tf.divide(SM, tf.multiply(parLP, parFC))
+        evapfactor = tf.clip_by_value(evapfactor,0.0,1.0)
+        ETact = tf.multiply(ETpot_obs, evapfactor)
+        ETact = tf.minimum(SM, ETact)
+        SM = tf.subtract(SM, ETact)
+    
+        """ Groundwater boxes """
        
-        else:
-            parTT = parameter[12]
-            parCFMAX = parameter[13]
-            parSFCF = parameter[14]
-            parCFR = parameter[15]
-            parCWH = parameter[16]
-            # parCET = parameter[17]
-            # parMAXBAS = parameter[18]
+        SUZ = tf.add(SUZ,tf.add(recharge,excess))
+        PERC0  = tf.minimum(SUZ, parPERC0)
+        SUZ = tf.subtract(SUZ, PERC0)
+        Q0 = tf.multiply(parK0,tf.maximum(tf.subtract(SUZ,parUZL), 0.0))
+        SUZ = tf.subtract(SUZ,Q0)
+        
+        SLZ1 = tf.add(SLZ1,PERC0)
+        PERC1 = tf.minimum(SLZ1,parPERC1)
+        Q1 = tf.multiply(parK1,SLZ1)
+        SLZ1 =  tf.subtract(SLZ1,Q1)     
+        
+        SLZ2 = tf.add(SLZ2,PERC1)
+        PERC2 = tf.minimum(SLZ2,parPERC2)
+        Q2 = tf.multiply(parK2,SLZ2)
+        SLZ2 =  tf.subtract(SLZ2,Q2)       
+        
+        SLZ3 = tf.add(SLZ3,PERC2)
+        Q3 = tf.multiply(parK3,SLZ3)
+        SLZ3 = tf.subtract(SLZ3,Q3)
+
+        Qsim = tf.add(Q3, tf.add(tf.add(Q0,Q1),Q2))
+
+        return SM,SUZ,SLZ1,SLZ2,SLZ3
     
-        # Initialize time series of model variables
-        SNOWPACK = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
-        MELTWATER = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
-        SM_,SUZ_,SLZ1_,SLZ2_,SLZ3_ = G_input[:,0],G_input[:,1],G_input[:,2],G_input[:,3],G_input[:,4]
-        
-        ETact = np.zeros(parBETA.shape, dtype=np.float32) + 0.001
-        Qsim = np.zeros(P.shape, dtype=np.float32) * np.NaN
-        # Qsim[0, :] = 0.001
-        
-        for t in range(0, len(G_output)):
-            # Separate precipitation into liquid and solid components
-            PRECIP = P_input[t] * parPCORR
-            RAIN = np.multiply(PRECIP, T_input[t] >= parTT)
-            SNOW = np.multiply(PRECIP, T_input[t] < parTT)
-            SNOW = SNOW * parSFCF
-        
-            # Snow
-            SNOWPACK = SNOWPACK + SNOW
-            melt = parCFMAX * (T_input[t] - parTT)
-            melt = melt.clip(0.0, SNOWPACK)
-            MELTWATER = MELTWATER + melt
-            SNOWPACK = SNOWPACK - melt
-            refreezing = parCFR * parCFMAX * (parTT - T_input[t])
-            refreezing = refreezing.clip(0.0, MELTWATER)
-            SNOWPACK = SNOWPACK + refreezing
-            MELTWATER = MELTWATER - refreezing
-            tosoil = MELTWATER - (parCWH * SNOWPACK)
-            tosoil = tosoil.clip(0.0, None)
-            MELTWATER = MELTWATER - tosoil
-            
-            if location==1:
-                tosoil=0        
-            # Soil and evaporation
-            SM = SM_[t]
-            soil_wetness = (SM / parFC) ** parBETA
-            soil_wetness = np.nan_to_num(soil_wetness.clip(0.0, 1.0))
-            recharge = (RAIN + tosoil) * soil_wetness
-            SM = SM + RAIN + tosoil - recharge
-            excess = SM - parFC
-            excess = excess.clip(0.0, None)
-            SM = SM - excess
-            evapfactor = SM / (parLP * parFC)
-            evapfactor = evapfactor.clip(0.0, 1.0)
-            ETact = ETpot_input[t] * evapfactor
-            ETact = np.minimum(SM, ETact)
-            SM = SM - ETact
-        
-            # Groundwater boxes
-            SUZ = SUZ_[t]
-            SUZ = SUZ + recharge + excess
-            PERC0 = np.minimum(SUZ, parPERC0)
-            SUZ = SUZ - PERC0
-            Q0 = parK0 * np.maximum(SUZ - parUZL, 0.0)
-            SUZ = SUZ - Q0
-            
-            SLZ1 = SLZ1_[t]
-            SLZ1 = SLZ1 + PERC0
-            PERC1 = np.minimum(SLZ1, parPERC1)
-            Q1 = parK1 * SLZ1
-            SLZ1 = SLZ1 - Q1     
-            
-            SLZ2 = SLZ2_[t]
-            SLZ2 = SLZ2 + PERC1
-            PERC2 = np.minimum(SLZ2, parPERC2)
-            Q2 = parK2 * SLZ2
-            SLZ2 = SLZ2 - Q2         
-            
-            SLZ3 = SLZ3_[t]
-            SLZ3 = SLZ3 + PERC2
-            Q3 = parK3 * SLZ3
-            SLZ3 = SLZ3 - Q3              
-            
-            Qsim[t] = Q0 + Q1 + Q2 + Q3
-            
-        loss0 = np.absolute(G_output[:,0]-SM)
-        loss1 = np.absolute(G_output[:,1]-SUZ)
-        loss2 = np.absolute(G_output[:,2]-SLZ1)
-        loss3 = np.absolute(G_output[:,3]-SLZ2)
-        loss4 = np.absolute(G_output[:,4]-SLZ3)
-        
-        loss=np.mean(loss0+loss1+loss2++loss3+loss4)
-        return loss
-    
-    # average_loss=HBV_model(parameter,P_input,T_input,ETpot_input,G_output)
-    res=differential_evolution(HBV_model,bounds,tol=1e-2, disp=True)
-    print(res.fun)
-    print(res.success)
-    print(res.x)
-    optima[station].append(res.x)
-
-#%%
-optima = np.squeeze(np.array(optima))
-optima = pd.DataFrame(optima)
-
-optima.columns = ['parBETA','parFC','parK0','parK1','parK2','parK3','parLP','parPERC0','parPERC1','parPERC2','parUZL','parPCORR']
-optima.to_csv(r"D:\important\research\groundwater_forecast\python_code\puyun\result\optima_parameter.csv")
-
