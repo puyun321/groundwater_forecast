@@ -5,40 +5,21 @@ Created on Thu Oct 20 17:14:44 2022
 @author: steve
 """
 
+import os
+path=r'D:\lab\research\groundwater_estimation\github\python_code\monthly_based' #if the code above cant work, please key in your parent directory
+os.chdir(path)
+
 import pandas as pd
 import numpy as np
 
-obs_train=pd.read_excel(r"D:\important\research\groundwater_forecast(monthly)\result\1st_layer\sorted_observation.xlsx",sheet_name="t+1(train)",index_col=0)
-pred_train=pd.read_excel(r"D:\important\research\groundwater_forecast(monthly)\result\1st_layer\sorted_predict(hbv-ann).xlsx",sheet_name="t+1(shuffle)",index_col=0)
-simulate_train=(pd.read_excel(r"D:\important\research\groundwater_forecast(monthly)\result\1st_layer\sorted_predict.xlsx",sheet_name="t+1(shuffle)",index_col=0)).iloc[1:,:]
-
-#%%
-G_station_info = pd.read_csv(r"D:\important\research\groundwater_forecast\station_info\groundwater_station.csv",delimiter='\t')
-
-G0 = pd.read_csv(r"D:\important\research\groundwater_forecast\daily_data\groundwater_l0.csv",delimiter=',');G0['date'] = pd.to_datetime(G0['date']);
-G0_ = G0.resample('1M',on='date',base=0,loffset='1M').mean()
-# G0_ = G0.resample('10D',on='date',base=0,loffset='9D').mean() #convert daily data to 10day based
-G0_station = G0.columns
-G0_station = pd.Series([G0_station[i][8:10] for i in range(1,len(G0_station))])
-G0_station = G0_station.drop_duplicates (keep='first').reset_index(drop=True)
-
-G1 = pd.read_csv(r"D:\important\research\groundwater_forecast\daily_data\groundwater_l1.csv",delimiter=',');G1['date'] = pd.to_datetime(G1['date']);
-G1_ = G1.resample('1M',on='date',base=0,loffset='1M').mean()
-G1_station = G1.columns
-G1_station = pd.Series([G1_station[i][8:10] for i in range(1,len(G1_station))])
-G1_station = G1_station.drop_duplicates (keep='first').reset_index(drop=True)
-
-G01_station = np.concatenate([G0_station,G1_station])
-
-G_station_info = pd.read_csv(r"D:\important\research\groundwater_forecast\station_info\groundwater_station.csv",delimiter='\t')
-G01_station_info = pd.DataFrame(np.squeeze(np.array([G_station_info.iloc[G_station_info[G_station_info.iloc[:,0]==G01_station[i]].index[0],:] for i in range(0,len(G01_station))])))
-G01_station_info.columns = ['station_name','X','Y']
-
-time = G0_.index; train_time = pd.DataFrame(time[:len(obs_train)])
-
-#%%
-
-P_station_info = pd.read_csv(r"D:\important\research\groundwater_forecast\station_info\rainfall_station.csv")
+# path2='result\\1st_layer\\performance_comparison\\train'
+path2='result\\1st_layer\\performance_comparison\\test'
+obs_test=pd.read_excel(path2+"\\T+1.xlsx",sheet_name="obs",index_col=0)
+pred_test=pd.read_excel(path2+"\\T+1.xlsx",sheet_name="HBV-AE-LSTM",index_col=0)
+simulate_test=(pd.read_excel(path2+"\\T+1.xlsx",sheet_name="HBV",index_col=0))
+test_time=obs_test.iloc[:,0]
+G_station_info = pd.read_excel(r"station_info\station_fullinfo.xlsx",sheet_name="G1",index_col=0) 
+P_station_info = pd.read_csv(r"station_info\rainfall_station.csv")
 
 #%%
 
@@ -122,11 +103,12 @@ def shp_clip(originfig, ax, shpfile):
     return contour
 
 #%%
-# year = [2001, 2007, 2012, 2015]
-year= 2015
+# year = [2001, 2007, 2012, 2015, 2017, 2018, 2019]
+year= 2019
 
 filename = 'landsubsidence_%s'%year
-landsubsidence_file = pd.read_csv(r"D:\important\research\groundwater_forecast(monthly)\landsubsidence(shp)\%s\%s.csv"%(year,filename))
+landsubsidence_file = pd.read_csv(r"landsubsidence(shp)\%s\%s.csv"%(year,filename), encoding='gbk')
+landsubsidence_file.columns=['ID','land_subsidence','distance','','x','y']
 land_x=landsubsidence_file.loc[:,'x']; land_y=landsubsidence_file.loc[:,'y']
 
 select_index=[]
@@ -219,11 +201,11 @@ fig = plt.figure(figsize=(16, 9),dpi=300)
 ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 ax.set_extent([120.05, 121.4, 23.4, 24.25], crs=ccrs.PlateCarree())
 
-shp_file = shpreader.Reader(r'D:\important\research\groundwater_forecast\zhuoshui(shp)\zhuoshui.shp')
+shp_file = shpreader.Reader(r'zhuoshui(shp)\zhuoshui.shp')
 ax.add_geometries(shp_file.geometries(), crs=ccrs.PlateCarree(), linewidths=1.2, edgecolor='k', facecolor='none') # edgecolor=調整邊框顏色
 cf = ax.contourf(X, Y, pred_train_z, levels=np.linspace(min_value,max_value,40), cmap='Reds_r', transform=ccrs.PlateCarree())
 
-shp_clip(cf, ax, r'D:\important\research\groundwater_forecast\zhuoshui(shp)\zhuoshui.shp')
+shp_clip(cf, ax, r'zhuoshui(shp)\zhuoshui.shp')
 
 plt.rcParams['font.sans-serif'] =['Taipei Sans TC Beta']  #匯入中文字體
 cb = plt.colorbar(cf)
@@ -235,7 +217,7 @@ plt.rcParams['axes.unicode_minus'] = False
 plt.axis('off')  # 去除圖片外框
 plt.title(filename, fontsize=20)
     # output_path=r'important\research\groundwater_forecast\python_code'
-output_path=r'D:\important\research\groundwater_forecast(monthly)\result\landsubsidence\result\%s'%filename
+output_path=r'result\landsubsidence\result\%s'%filename
 plt.savefig(os.path.join(output_path+'.png'), bbox_inches='tight')  # bbox_inches是修改成窄邊框
 plt.close()
 plt.cla()

@@ -1,0 +1,4 @@
+1. find landsubsidence(shp) folder, drag shp file into qgis ->save feature as ->export shp file from 3826 to 4326 coordinate
+2. Points along geometry (toolbox) ->distance 10, degree 0.001
+3. Right click on generate point -> Open field calculator -> create a new field (longtitude and latitude) -> $x and $y for x and y, respectively (remember to select decimal number(double))
+4. Export -> landsubsidence_“year”.csv
