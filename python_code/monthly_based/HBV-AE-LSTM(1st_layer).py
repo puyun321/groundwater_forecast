@@ -239,15 +239,15 @@ min_index=np.squeeze(np.array([all_info[i][1] for i in range(0,len(all_info))]))
 
 #%%
 import tensorflow as tf
-from keras import regularizers
-from keras import Model
-from keras.engine.input_layer import Input
-from keras.models import load_model
-from keras import backend as K
-from keras.layers import Dense,LSTM,Conv2D,Flatten,Concatenate,Lambda,Layer,MaxPooling2D,UpSampling2D,Reshape
-from keras.callbacks import EarlyStopping
-from keras.callbacks import ModelCheckpoint
-from keras.optimizers import Adam
+from tensorflow.keras import regularizers
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import load_model
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Dense,LSTM,Conv2D,Flatten,Concatenate,Lambda,Layer,MaxPooling2D,UpSampling2D,Reshape
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.optimizers import Adam
 
 """ Define DNN model """
             
@@ -558,6 +558,8 @@ for station_no in range(0,g1_station_num):
     model=DLSTM_model(timestep)
     earlystopper = EarlyStopping(monitor='val_loss', patience=30, verbose=0)        
     save_path=r"model\1st_layer\hbv-ae-lstm(station%s).hdf5"%(station_no)
+    # save_path=r"model\calculation\hbv-ae-lstm(station%s).hdf5"%(station_no)
+
     checkpoint =ModelCheckpoint(save_path,save_best_only=True)
     callback_list=[earlystopper,checkpoint] 
     # if station_no in specific_station_no:

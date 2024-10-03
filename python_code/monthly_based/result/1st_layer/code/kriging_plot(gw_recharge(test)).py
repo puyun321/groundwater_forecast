@@ -16,35 +16,35 @@ path2='result\\1st_layer\\performance_comparison\\test'
 obs_test=pd.read_excel(path2+"\\T+1.xlsx",sheet_name="obs",index_col=0)
 pred_test=pd.read_excel(path2+"\\T+1.xlsx",sheet_name="HBV-AE-LSTM",index_col=0)
 simulate_test=(pd.read_excel(path2+"\\T+1.xlsx",sheet_name="HBV",index_col=0))
-test_time=obs_test.iloc[:,0]
+test_time=pd.DataFrame(obs_test.index)
 G_station_info = pd.read_excel(r"station_info\station_fullinfo.xlsx",sheet_name="G1",index_col=0) 
 P_station_info = pd.read_csv(r"station_info\rainfall_station.csv")
 
 #%%
 """calculate recharge"""
 #颱風季節
-start_date='2017-07-31';end_date='2017-08-31' 
+# start_date='2017-07-31';end_date='2017-08-31' 
 # start_date='2018-07-31';end_date='2018-08-31' 
 # start_date='2019-07-31';end_date='2019-08-31' 
 
 # #非颱風季節
-# start_date='2017-01-01';end_date='2017-12-31'
+start_date='2017-01-01';end_date='2017-12-31'
 # start_date='2018-01-01';end_date='2018-12-31' 
 # start_date='2019-01-01';end_date='2019-12-31' 
 
-choose_date = (test_time[(test_time>=start_date) & (test_time<=end_date)]).reset_index(drop=True)
+choose_date = (test_time[(test_time>=start_date) & (test_time<=end_date)])
 select_index= test_time[(test_time>=start_date) & (test_time<=end_date)].index
 
-pred_event = pred_test.iloc[select_index[0],1:]-pred_test.iloc[select_index[-1],1:]
-simulate_event = simulate_test.iloc[select_index[0],1:]-simulate_test.iloc[select_index[-1],1:]
-obs_event = obs_test.iloc[select_index[0],1:]-obs_test.iloc[select_index[-1],1:]
+pred_event = pred_test.iloc[select_index[0],:]-pred_test.iloc[select_index[-1],:]
+simulate_event = simulate_test.iloc[select_index[0],:]-simulate_test.iloc[select_index[-1],:]
+obs_event = obs_test.iloc[select_index[0],:]-obs_test.iloc[select_index[-1],:]
 
 #%%
 import math
 from pykrige.ok import OrdinaryKriging
 
-G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
-G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
+G_grid_lon = np.linspace(math.floor(min(G_station_info.loc[:, 'X'])), math.ceil(max(G_station_info.loc[:, 'X'])), 30)
+G_grid_lat = np.linspace(math.floor(min(G_station_info.loc[:, 'Y'])), math.ceil(max(G_station_info.loc[:, 'Y'])), 30)
 
 X,Y = np.meshgrid(G_grid_lon,G_grid_lat)
 
@@ -54,13 +54,57 @@ def Ordinary_Kriging(data,station_info,grid_lon,grid_lat):
     z1, ss1 = OK.execute("grid", grid_lon, grid_lat)
     return z1,ss1
 
-pred_test_z = Ordinary_Kriging(np.squeeze(pred_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+"""IDW interpolation"""
+def simple_idw(x, y, z, xi, yi, power=1):
+    """ Simple inverse distance weighted (IDW) interpolation 
+    Weights are proportional to the inverse of the distance, so as the distance
+    increases, the weights decrease rapidly.
+    The rate at which the weights decrease is dependent on the value of power.
+    As power increases, the weights for distant points decrease rapidly.
+    """
+    def distance_matrix(x0, y0, x1, y1):
+        """ Make a distance matrix between pairwise observations.
+        Note: from <http://stackoverflow.com/questions/1871536> 
+        """
+        x1, y1 = x1.flatten(), y1.flatten()
+        obs = np.vstack((x0, y0)).T
+        interp = np.vstack((x1, y1)).T
+
+        d0 = np.subtract.outer(obs[:,0], interp[:,0])
+        d1 = np.subtract.outer(obs[:,1], interp[:,1])
+        
+        # calculate hypotenuse
+        # result = np.hypot(d0, d1)
+        result = np.sqrt(((d0 * d0) + (d1 * d1)).astype(float))
+        return result
+    
+    dist = distance_matrix(x,y, xi,yi)
+
+    # In IDW, weights are 1 / distance
+    weights = 1.0/(dist+1e-12)**power
+
+    # Make weights sum to one
+    weights /= weights.sum(axis=0)
+
+    # Multiply the weights for each interpolated point by all observed Z-values
+    return np.dot(weights.T, z)
+
+def IDW_interpolation(data,station_info,grid_lon,grid_lat):
+    xi, yi = np.meshgrid(grid_lon,grid_lat)
+    Z = simple_idw(np.array(station_info.loc[:, 'X']),np.array(station_info.loc[:, 'Y']), data, xi, yi, power=5)
+    Z = Z.reshape((xi.shape[0]),(yi.shape[0]))
+    return Z
+
+# pred_test_z = Ordinary_Kriging(np.squeeze(pred_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+pred_test_z = IDW_interpolation(np.squeeze(pred_event),G_station_info,G_grid_lon,G_grid_lat)
 pred_test_z = np.nan_to_num(pred_test_z)
 
-obs_test_z = Ordinary_Kriging(np.squeeze(obs_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+# obs_test_z = Ordinary_Kriging(np.squeeze(obs_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+obs_test_z = IDW_interpolation(np.squeeze(obs_event),G_station_info,G_grid_lon,G_grid_lat)
 obs_test_z = np.nan_to_num(obs_test_z)
 
-simulate_test_z = Ordinary_Kriging(np.squeeze(simulate_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+# simulate_test_z = Ordinary_Kriging(np.squeeze(simulate_event),G_station_info,G_grid_lon,G_grid_lat)[0]
+simulate_test_z = IDW_interpolation(np.squeeze(simulate_event),G_station_info,G_grid_lon,G_grid_lat)
 simulate_test_z = np.nan_to_num(simulate_test_z)
 
 #%%
@@ -86,10 +130,11 @@ import os
 os.chdir(r'D:\lab\research\research_use_function')
 from error_indicator import error_indicator
 os.chdir(path)
-pred_test_RMSE = round(error_indicator.np_RMSE((obs_test_z).flatten(),(pred_test_z).flatten()),2)
-simulate_test_RMSE = round(error_indicator.np_RMSE((obs_test_z).flatten(),(simulate_test_z).flatten()),2)
-pred_test_R2 = round(error_indicator.np_R2((obs_test_z).flatten(),(pred_test_z).flatten()),2)
-simulate_test_R2 = round(error_indicator.np_R2((obs_test_z).flatten(),(simulate_test_z).flatten()),2)
+obs_test_flatten=np.array((obs_test_z).flatten()).astype(float); pred_test_flatten=np.array((pred_test_z).flatten()).astype(float)
+pred_test_RMSE = round(error_indicator.np_RMSE(obs_test_flatten,pred_test_flatten),2)
+simulate_test_RMSE = round(error_indicator.np_RMSE(obs_test_flatten,pred_test_flatten),2)
+pred_test_R2 = round(error_indicator.np_R2(obs_test_flatten,pred_test_flatten),2)
+simulate_test_R2 = round(error_indicator.np_R2(obs_test_flatten,pred_test_flatten),2)
 obs_mean=round(np.mean(obs_test_z),2); obs_std=round(np.std(obs_test_z),2)
 
 #%%
@@ -149,7 +194,7 @@ shp_clip(cf, ax, r'zhuoshui(shp)\zhuoshui.shp')
 plt.rcParams['font.sans-serif'] =['Taipei Sans TC Beta']  #匯入中文字體
 cb = plt.colorbar(cf)
 lons = np.array(G_station_info.loc[:,'X']); lats = G_station_info.loc[:,'Y']; station_name = G_station_info.iloc[:,0]
-plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
+# plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
 plt.rcParams['axes.unicode_minus'] = False
 for i in range(len(lons)):        
@@ -179,7 +224,7 @@ shp_clip(cf, ax, r'zhuoshui(shp)\zhuoshui.shp')
 plt.rcParams['font.sans-serif'] =['Taipei Sans TC Beta']  #匯入中文字體
 cb = plt.colorbar(cf)
 lons = np.array(G_station_info.loc[:,'X']); lats = G_station_info.loc[:,'Y']; station_name = G_station_info.iloc[:,0]
-plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
+# plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
 plt.rcParams['axes.unicode_minus'] = False
 for i in range(len(lons)):        
@@ -208,7 +253,7 @@ shp_clip(cf, ax, r'zhuoshui(shp)\zhuoshui.shp')
 plt.rcParams['font.sans-serif'] =['Taipei Sans TC Beta']  #匯入中文字體
 cb = plt.colorbar(cf)
 lons = np.array(G_station_info.loc[:,'X']); lats = G_station_info.loc[:,'Y']; station_name = G_station_info.iloc[:,0]
-plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
+# plt.scatter(lons, lats, color='navy', s=35)  # s是調整座標點大小
 plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
 plt.rcParams['axes.unicode_minus'] = False
 for i in range(len(lons)):        

@@ -92,6 +92,22 @@ def merge_data(data,station_info):
 all_performance_=merge_data(all_performance,station_info)
 
 #%%
+""" station is sorted by std"""
+sorted_info=pd.read_excel('data_statistic(sort_std).xlsx',sheet_name='l1')
+sorted_performance=pd.concat([all_performance_[all_performance_.iloc[:,0]==sorted_info.iloc[i,2]] for i in range(len(sorted_info))]).reset_index(drop=True)
+obs_test.columns=[i for i in station_info.iloc[:,0]]
+columns_name=pd.DataFrame(obs_test.columns)
+sorted_obs_test=pd.concat([choose_date,pd.concat([obs_test.iloc[:,columns_name[columns_name.iloc[:,0]==sorted_info.iloc[i,2]].index[0]] for i in range(len(sorted_info))],axis=1)],axis=1)
+pred_test_adjust.columns=[i for i in station_info.iloc[:,0]]
+sorted_pred_test_adjust=pd.concat([choose_date,pd.concat([pred_test_adjust.iloc[:,columns_name[columns_name.iloc[:,0]==sorted_info.iloc[i,2]].index[0]] for i in range(len(sorted_info))],axis=1)],axis=1)
+simulate_test.columns=[i for i in station_info.iloc[:,0]]
+sorted_simulate_test=pd.concat([choose_date,pd.concat([simulate_test.iloc[:,columns_name[columns_name.iloc[:,0]==sorted_info.iloc[i,2]].index[0]] for i in range(len(sorted_info))],axis=1)],axis=1)
+
+sorted_obs_test.index=sorted_obs_test.iloc[:,0];sorted_obs_test=sorted_obs_test.iloc[:,1:]
+sorted_pred_test_adjust.index=sorted_pred_test_adjust.iloc[:,0];sorted_pred_test_adjust=sorted_pred_test_adjust.iloc[:,1:]
+sorted_simulate_test.index=sorted_simulate_test.iloc[:,0];sorted_simulate_test=sorted_simulate_test.iloc[:,1:]
+
+#%%
 """ save as result"""
 path4='result\\1st_layer\\performance_comparison\\test'
 isExist = os.path.exists(path4)
@@ -101,13 +117,10 @@ if not isExist:
   print("The new directory is created!")
 writer = pd.ExcelWriter(path4+"\\T+%s.xlsx"%forecast_timestep,engine='xlsxwriter')
 
-all_performance_.to_excel(writer,sheet_name="all_performance")
-obs_test_=pd.concat([choose_date,obs_test],axis=1);obs_test_.columns=np.concatenate([['date'],[i for i in station_info.iloc[:,0]]])
-obs_test_.to_excel(writer,sheet_name="obs")
-pred_test_adjust_=pd.concat([choose_date,pred_test_adjust],axis=1); pred_test_adjust_.columns=np.concatenate([['date'],[i for i in station_info.iloc[:,0]]])
-pred_test_adjust_.to_excel(writer,sheet_name="HBV-AE-LSTM")
-simulate_test_=pd.concat([choose_date,simulate_test],axis=1); simulate_test_.columns=np.concatenate([['date'],[i for i in station_info.iloc[:,0]]])
-simulate_test_.to_excel(writer,sheet_name="HBV")
+sorted_performance.to_excel(writer,sheet_name="all_performance")
+sorted_obs_test.to_excel(writer,sheet_name="obs")
+sorted_pred_test_adjust.to_excel(writer,sheet_name="HBV-AE-LSTM")
+sorted_simulate_test.to_excel(writer,sheet_name="HBV")
 writer.save()
 
 #%%
@@ -121,21 +134,21 @@ if not isExist:
   print("The new directory is created!")
 
 for station in range(0,33):
-    hbv_ann_R2=round(error_indicator.np_R2(obs_test.iloc[:,station],pred_test_adjust.iloc[:,station]),2)
-    hbv_ann_RMSE=round(error_indicator.np_RMSE(obs_test.iloc[:,station],pred_test_adjust.iloc[:,station]),2)
+    hbv_ann_R2=round(error_indicator.np_R2(sorted_obs_test.iloc[:,station],sorted_pred_test_adjust.iloc[:,station]),2)
+    hbv_ann_RMSE=round(error_indicator.np_RMSE(sorted_obs_test.iloc[:,station],sorted_pred_test_adjust.iloc[:,station]),2)
     
-    hbv_R2=round(error_indicator.np_R2(obs_test.iloc[:,station],simulate_test.iloc[:,station]),2)
-    hbv_RMSE=round(error_indicator.np_RMSE(obs_test.iloc[:,station],simulate_test.iloc[:,station]),2)
+    hbv_R2=round(error_indicator.np_R2(sorted_obs_test.iloc[:,station],sorted_simulate_test.iloc[:,station]),2)
+    hbv_RMSE=round(error_indicator.np_RMSE(sorted_obs_test.iloc[:,station],sorted_simulate_test.iloc[:,station]),2)
     
     fig = plt.figure(figsize=(10,6))
     plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei']   
     plt.rcParams['axes.unicode_minus']=False  
     plt.style.use('ggplot')
     plt.title('%s Station'%station_info.iloc[station,0])
-    plt.plot(choose_date,obs_test.iloc[:,station], color='black', linewidth=1.5)
-    plt.plot(choose_date,pred_test_adjust.iloc[:,station], color='red', linewidth=0.8)
+    plt.plot(choose_date,sorted_obs_test.iloc[:,station], color='black', linewidth=1.5)
+    plt.plot(choose_date,sorted_pred_test_adjust.iloc[:,station], color='red', linewidth=0.8)
 
-    plt.plot(choose_date,simulate_test.iloc[:,station], color='blue', linewidth=0.8)
+    plt.plot(choose_date,sorted_simulate_test.iloc[:,station], color='blue', linewidth=0.8)
     plt.ylabel('Groundwater Level'); plt.xlabel('Groundwater Level')
     # plt.show()
     plt.savefig(path2+'\\%s.png'%station_info.iloc[station,0])
@@ -169,8 +182,9 @@ def plot_figure(performance,name):
     ax.plot(angles, data1, 'ro-', linewidth=0.5, markersize=1, label='HBV-LSTM')# 畫線四個引數為x,y,標記和顏色，閒的寬度
     ax.plot(angles, data2, 'bo-', linewidth=0.5, markersize=1,label='HBV')# 畫線四個引數為x,y,標記和顏色，閒的寬度
     ax.set_thetagrids(angles * 180/np.pi, labels, fontproperties="Times New Roman")
-    ax.tick_params(labelsize=8)
-    plt.yticks(fontname = "Times New Roman") 
+    # ax.tick_params(labelsize=8)
+    ax.set_yticklabels([])
+    # plt.yticks(fontname = "Times New Roman") 
     ax.set_title('%s'%name,color="black", fontsize=10, fontproperties="Times New Roman")
 
     # plt.legend()
@@ -193,8 +207,8 @@ def plot_figure(performance,name):
     plt.show()
     plt.clf()
 
-plot_figure(all_performance.iloc[:,[0,2]],'Testing R2(T+%s)'%forecast_timestep)
-plot_figure(all_performance.iloc[:,[1,3]],'Testing RMSE(T+%s)'%forecast_timestep)
+plot_figure(sorted_performance.iloc[:,[2,4]],'Testing R2(T+%s)'%forecast_timestep)
+plot_figure(sorted_performance.iloc[:,[3,5]],'Testing RMSE(T+%s)'%forecast_timestep)
 
     
 # plot_figure(all_performance.iloc[:,1],'Pred Testing rmse(T+1)')

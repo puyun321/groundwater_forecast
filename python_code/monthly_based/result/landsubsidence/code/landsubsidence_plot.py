@@ -21,55 +21,6 @@ test_time=obs_test.iloc[:,0]
 G_station_info = pd.read_excel(r"station_info\station_fullinfo.xlsx",sheet_name="G1",index_col=0) 
 P_station_info = pd.read_csv(r"station_info\rainfall_station.csv")
 
-#%%
-
-import math
-
-G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
-G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
-
-X,Y = np.meshgrid(G_grid_lon,G_grid_lat)
-
-"""IDW interpolation"""
-def simple_idw(x, y, z, xi, yi, power=1):
-    """ Simple inverse distance weighted (IDW) interpolation 
-    Weights are proportional to the inverse of the distance, so as the distance
-    increases, the weights decrease rapidly.
-    The rate at which the weights decrease is dependent on the value of power.
-    As power increases, the weights for distant points decrease rapidly.
-    """
-    def distance_matrix(x0, y0, x1, y1):
-        """ Make a distance matrix between pairwise observations.
-        Note: from <http://stackoverflow.com/questions/1871536> 
-        """
-        x1, y1 = x1.flatten(), y1.flatten()
-        obs = np.vstack((x0, y0)).T
-        interp = np.vstack((x1, y1)).T
-
-        d0 = np.subtract.outer(obs[:,0], interp[:,0])
-        d1 = np.subtract.outer(obs[:,1], interp[:,1])
-        
-        # calculate hypotenuse
-        # result = np.hypot(d0, d1)
-        result = np.sqrt(((d0 * d0) + (d1 * d1)).astype(float))
-        return result
-    
-    dist = distance_matrix(x,y, xi,yi)
-
-    # In IDW, weights are 1 / distance
-    weights = 1.0/(dist+1e-12)**power
-
-    # Make weights sum to one
-    weights /= weights.sum(axis=0)
-
-    # Multiply the weights for each interpolated point by all observed Z-values
-    return np.dot(weights.T, z)
-
-def IDW_interpolation(data,station_info,grid_lon,grid_lat):
-    xi, yi = np.meshgrid(grid_lon,grid_lat)
-    Z = simple_idw(np.array(station_info.loc[:, 'X']),np.array(station_info.loc[:, 'Y']), data, xi, yi, power=5)
-    Z = Z.reshape((xi.shape[0]),(yi.shape[0]))
-    return Z
 
 #%%
 
@@ -104,7 +55,7 @@ def shp_clip(originfig, ax, shpfile):
 
 #%%
 # year = [2001, 2007, 2012, 2015, 2017, 2018, 2019]
-year= 2019
+year= 2007
 
 filename = 'landsubsidence_%s'%year
 landsubsidence_file = pd.read_csv(r"landsubsidence(shp)\%s\%s.csv"%(year,filename), encoding='gbk')
@@ -122,8 +73,14 @@ select_index=np.array(select_index)
 landsubsidence_file=landsubsidence_file.iloc[select_index]
 land_x=land_x.iloc[select_index]; land_y=land_y.iloc[select_index]
 
-G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
-G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
+import math
+
+G_grid_lon = np.linspace(math.floor(min(G_station_info.loc[:, 'X'])), math.ceil(max(G_station_info.loc[:, 'X'])), 30)
+G_grid_lat = np.linspace(math.floor(min(G_station_info.loc[:, 'Y'])), math.ceil(max(G_station_info.loc[:, 'Y'])), 30)
+
+# G_grid_lon = np.linspace(math.floor(min(P_station_info.loc[:, 'X'])), math.ceil(max(P_station_info.loc[:, 'X'])), 30)
+# G_grid_lat = np.linspace(math.floor(min(P_station_info.loc[:, 'Y'])), math.ceil(max(P_station_info.loc[:, 'Y'])), 30)
+
 X,Y = np.meshgrid(G_grid_lon,G_grid_lat)
 
 #注意xy順序
