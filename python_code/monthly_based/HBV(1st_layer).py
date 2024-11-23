@@ -4,15 +4,18 @@ Created on Tue Jul 12 13:58:25 2022
 
 @author: steve
 """
+
+"""change woking directory to current directory"""
 import os
-path=r'D:\important\research\groundwater_forecast(monthly)'
-os.chdir(path)
+os.chdir(r"D:\lab\research\research_use_function")
+from error_indicator import error_indicator
+os.chdir(os.path.dirname(__file__))
+
+#%% Read research dataset
 import pandas as pd
 import numpy as np
 
-#%%
 P_path = r"daily_data\rainfall.csv"
-# P = pd.read_csv(P_path,index_col=0)
 P = pd.read_csv(P_path);P['date'] = pd.to_datetime(P['date']);
 P = P.resample('1M',on='date',base=0,loffset='1M').mean() #convert daily data to 10day based
 P_station = P.columns
@@ -20,7 +23,6 @@ P = np.array(P)
 P_station_info = pd.read_csv(r"D:\important\research\groundwater_forecast\station_info\rainfall_station.csv")
 
 T_path = r"daily_data\temperature.csv"
-# T = pd.read_csv(T_path,index_col=0)
 T = pd.read_csv(T_path);T['date'] = pd.to_datetime(T['date']);
 T = T.resample('1M',on='date',base=0,loffset='1M').mean() #convert daily data to 10day based
 T_station = T.columns
@@ -29,7 +31,6 @@ T_station_info = pd.concat([P_station_info.iloc[P_station_info[P_station_info.il
 T_station_info.columns = P_station_info.columns
 
 ETpot_path = r"daily_data\evaporation_rate.csv"
-# ETpot = pd.read_csv(ETpot_path,index_col=0)
 ETpot = pd.read_csv(ETpot_path);ETpot['date'] = pd.to_datetime(ETpot['date']);
 ETpot = ETpot.resample('1M',on='date',base=0,loffset='1M').mean() #convert daily data to 10day based
 ETpot_station = ETpot.columns
@@ -37,8 +38,8 @@ ETpot = np.array(ETpot)
 ETpot_station_info = pd.concat([P_station_info.iloc[P_station_info[P_station_info.iloc[:,0]==ETpot_station[i]].index,:] for i in range(0,len(ETpot_station))])
 ETpot_station_info.columns = P_station_info.columns  
 
-#%%
-#merge stations with same name
+#%% define function
+# merge stations with same name
 def merge_samename(G_station,G):
     G_station=pd.Series(G_station)
     station_index=[[]*1 for i in range(0,len(G_station.duplicated(keep=False)))];record=0
@@ -181,8 +182,7 @@ P_z = np.nan_to_num(P_z)
 T_z = np.array([IDW_interpolation(np.squeeze(T[i, :]),T_station_info,G_grid_lon,G_grid_lat) for i in range(0,len(T))])
 ETpot_z = np.array([IDW_interpolation(np.squeeze(ETpot[i, :]),ETpot_station_info,G_grid_lon,G_grid_lat) for i in range(0,len(ETpot))])
     
-#%%
-
+#%% Find grid location of gw well at level 0 and 1 
 G_name = pd.Series(np.concatenate([G0_station_name, G1_station_name, G2_station_name, G3_station_name, G4_station_name]))
 G_unique = G_name.drop_duplicates(keep="first").reset_index(drop=True)
 G_unique_station_info = pd.concat([G_station_info.iloc[G_station_info[G_station_info.iloc[:,0]==G_unique[i]].index,:] for i in range(0,len(G_unique))])
@@ -192,7 +192,6 @@ def get_specific_coordinate(x1,y1,x2,y2):
     distance=[[]*1 for i in range(0,x2.shape[0])]
     for i in range(0,x2.shape[0]):
         for j in range(0,x2.shape[1]):
-            # distance[i].append(math.dist([x1,y1],[x2[i,j],y2[i,j]]))
             distance[i].append(((((x2[i,j] - x1 )**2) + ((y2[i,j]-y1)**2) )**0.5))
 
     distance=np.array(distance)
@@ -228,8 +227,7 @@ G01_out1 = G01_new[timestep-1+forecast_timestep[0]:-(timestep-forecast_timestep[
 G01_out2 = G01_new[timestep-1+forecast_timestep[1]:-(timestep-forecast_timestep[1])]  
 G01_out3 = G01_new[timestep-1+forecast_timestep[2]:]  
 
-#%%
-#split train test
+#%%split train test
 date=pd.DataFrame(G0.iloc[timestep-1+forecast_timestep[0]:-(timestep-forecast_timestep[0])].index)
 train_index = date[date.iloc[:,0]<"2017-01-01"].index; test_index = date[date.iloc[:,0]>="2017-01-01"].index
 
@@ -253,10 +251,8 @@ G_test_out2 = G01_out2[test_index,:]
 G_test_out3 = G01_out3[test_index,:]
 G_test_out = [G_test_out1, G_test_out2, G_test_out3]
 
-#%%
-#shuffle train test    
+#%% shuffle train test    
 
-# shuffle_index = np.array(pd.read_excel(r"D:\important\research\groundwater_forecast\python_code\puyun\result\1st_layer\sorted_predict.xlsx",sheet_name="shuffle_index",index_col=0))
 shuffle_index =np.arange(len(G_train_obs))
 np.random.shuffle(shuffle_index)
 
@@ -280,8 +276,8 @@ G_shuffle_test_out2 = G01_out2[shuffle_index[int(len(shuffle_index)*0.8):],:]
 G_shuffle_test_out3 = G01_out3[shuffle_index[int(len(shuffle_index)*0.8):],:]
 G_shuffle_test_out = [G_shuffle_test_out1, G_shuffle_test_out2, G_shuffle_test_out3]
 
-#%%
-# parameter range https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019JD031485
+#%% build HBV model and find its optimize value
+""" parameter range https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2019JD031485 """
 from scipy.optimize import differential_evolution
 
 bounds = [(1,6), (50, 1000), (0.2,1), (0,0.2)]
@@ -364,7 +360,6 @@ for j in range(0,3):
                 loss0 = np.absolute(G_out[t]-GW_forecast)       
                 loss.append(loss0)
             loss=np.mean(loss)
-
             return loss
 
         res=differential_evolution(HBV_model,bounds,tol=1e-8, disp=True)
@@ -379,12 +374,10 @@ for index,optima in enumerate(optima_alltimestep):
     
     optima = np.squeeze(np.array(optima))
     optima = pd.DataFrame(optima)
-    
     optima.columns = ['parBETA','parFC','parLP','parPCORR']
     optima.to_csv(r"result\1st_layer\optima_parameter(t+%s).csv"%(index+1))
 
-#%%
-#verify the trained model
+#%% verify the trained model
 all_simulate_train_result=[]
 all_simulate_test_result=[]
 all_simulate_real_test_result=[]
@@ -397,7 +390,6 @@ for index in range(0,3):
         parTT,parCFMAX,parSFCF,parCFR,parCWH = 0,0,0,0,0
         simulate_result=[[]*1 for i in range(0,len(optima))]
         for station in range(0,len(optima)):
-        # for station in range(0,1):
             G_in=G_input[:,station]
             P_in,T_in,ETpot_in=P_input[:,station],T_input[:,station],ETpot_input[:,station]
             # Initialize time series of model variables
@@ -467,8 +459,7 @@ for index in range(0,3):
     simulate_test_result=HBV_trained_model(G_test_obs,P_test_obs,T_test_obs,ETpot_test_obs)
     all_simulate_real_test_result.append(simulate_test_result)
 
-#%%
-#sort result
+#%% sort result and save to the excel
 split_index=int(0.8*len(G_train_out))
 g1_station_num=G01_new.shape[1]
 writer = pd.ExcelWriter(r"result\1st_layer\sorted_predict.xlsx",engine='xlsxwriter')
@@ -489,13 +480,9 @@ for i in range(0,3):
     pd.DataFrame(real_test).to_excel(writer,sheet_name="t+%s(test)"%(i+1))
 writer.save()    
 
-#%%
-import os
-os.chdir(r"D:\important\research\research_use_function")
-from error_indicator import error_indicator
-os.chdir(path)
-# save result
+#%% save result
 
+# save train result
 writer = pd.ExcelWriter(r"result\1st_layer\simulate-shuffle(train).xlsx",engine='xlsxwriter')
 for i,simulate_train_result in enumerate(all_simulate_train_result):
     pd.DataFrame(simulate_train_result).to_excel(writer,sheet_name="simulate_result(t+%s)"%(i+1))
@@ -518,6 +505,7 @@ train.to_excel(writer,sheet_name="training_performance")
 pd.DataFrame(shuffle_index).to_excel(writer,sheet_name="shuffle_index")
 writer.save()
 
+# save test result
 writer = pd.ExcelWriter(r"result\1st_layer\simulate-shuffle(test).xlsx",engine='xlsxwriter')
 for i,simulate_test_result in enumerate(all_simulate_test_result):
     pd.DataFrame(simulate_test_result).to_excel(writer,sheet_name="simulate_result(t+%s)"%(i+1))
@@ -539,6 +527,7 @@ test=pd.concat([test_R2,test_rmse],axis=1)
 test.to_excel(writer,sheet_name="testing_performance")
 writer.save()
     
+#  save additional test result
 writer = pd.ExcelWriter(r"result\1st_layer\simulate(test).xlsx",engine='xlsxwriter')
 for i,simulate_test_result in enumerate(all_simulate_real_test_result):
     pd.DataFrame(simulate_test_result).to_excel(writer,sheet_name="simulate_result(t+%s)"%(i+1))

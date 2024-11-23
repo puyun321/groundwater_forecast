@@ -6,11 +6,10 @@ Created on Wed Jun  7 00:56:33 2023
 """
 
 import os
-
-working= os.path.dirname(os.path.abspath('__file__')) #try run this if work
-
-path=r'D:\lab\research\groundwater_estimation\github\python_code\monthly_based' #if the code above cant work, please key in your parent directory
-os.chdir(path)
+os.chdir(r"D:\lab\research\research_use_function")
+from multidimensional_reshape import multi_input_output
+from error_indicator import error_indicator
+os.chdir(os.path.dirname(__file__))
 
 #%%
 """ Read Center Weather Bureau(CWB) Dataset """
@@ -77,7 +76,7 @@ def get_station_info(all_station_info,specific_station):
     specific_station_info.columns = all_station_info.columns
     return specific_station_info
 
-#%%
+#%% Read research dataset
 """Read Water Resource Agency(WRA) Groundwater Dataset"""
 
 ## Groundwater well info
@@ -112,9 +111,8 @@ G01_station_info = pd.DataFrame(np.squeeze(np.array(np.concatenate([G0_station_i
 # G01_station_info = pd.DataFrame(np.squeeze(np.array([G_station_info.iloc[G_station_info[G_station_info.iloc[:,0]==G01_station[i,0]].index,:] for i in range(0,len(G01_station))])))
 G01_station_info.columns = ['station_name','X','Y']
 
-#%%
+#%% Groundwater level 2 to 4 data 
 """Other levels groundwater station (currently unused)"""
-## Groundwater level 2 to 4 data 
 G2 = pd.read_csv(r"daily_data\groundwater_l2.csv",delimiter=',');G2['date'] = pd.to_datetime(G2['date']);
 G2 = G2.resample('1M',on='date',base=0,loffset='1M').mean() #convert daily data to 10day based
 G2_station = G2.columns
@@ -206,8 +204,7 @@ T_z = np.array([IDW_interpolation(np.squeeze(T[i, :]),T_station_info,G_grid_lon,
 ## Regional Evaporation 
 ETpot_z = np.array([IDW_interpolation(np.squeeze(ETpot[i, :]),ETpot_station_info,G_grid_lon,G_grid_lat) for i in range(0,len(ETpot))])
     
-#%%
-"""Find grid location of gw well at level 0 and 1 """
+#%% Find grid location of gw well at level 0 and 1 
 G_name = pd.Series(np.concatenate([G0_station_name, G1_station_name, G2_station_name, G3_station_name, G4_station_name]))
 G_unique = G_name.drop_duplicates(keep="first").reset_index(drop=True)
 G_unique_station_info = pd.concat([G_station_info.iloc[G_station_info[G_station_info.iloc[:,0]==G_unique[i]].index,:] for i in range(0,len(G_unique))])
@@ -243,7 +240,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Dense,LSTM,Conv2D,Flatten,Concatenate,Lambda,Layer,MaxPooling2D,UpSampling2D,Reshape
+from tensorflow.keras.layers import Dense,LSTM,Conv2D,Flatten,Concatenate,Lambda,MaxPooling2D,UpSampling2D,Reshape
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -333,32 +330,6 @@ def DLSTM_model(timestep):
 
     print(model.summary())
     return model 
-
-
-#%%
-import os
-os.chdir(r"D:\lab\research\research_use_function")
-from multidimensional_reshape import multi_input_output
-from error_indicator import error_indicator
-os.chdir(path)
-
-def convert_result(pred,station_num):
-    converted_pred=[[]*1 for i in range(0,station_num)]
-    ratio=int(len(pred)/station_num)
-    for i in range(0,station_num):
-        for j in range(0,ratio):
-            converted_pred[i].append(pred[j+ratio*i])
-    converted_pred=np.transpose(np.squeeze(np.array(converted_pred)))
-    return converted_pred
-
-def convert_shuffle_result(pred,shuffle_index,station_num):
-    converted_pred=[[]*1 for i in range(0,station_num)]
-    ratio=int(len(pred)/station_num)
-    for i in range(0,station_num):
-        for j in range(0,ratio):
-            converted_pred[i].append(pred[j+ratio*i])
-    converted_pred=np.transpose(np.squeeze(np.array(converted_pred)))
-    return converted_pred
 
         
 #%%    
@@ -458,9 +429,7 @@ simulate_test = np.concatenate([simulate_merge_test[:,:,i] for i in range(0,len(
 ## Regional Groundwater Forecast
 simulate_test_z = [[IDW_interpolation(np.squeeze(simulate_merge_test[i,j,:]),G01_station_info,G_grid_lon,G_grid_lat) for j in range(0,3)] for i in range(0,len(simulate_merge_test))]
 
-#%%
-""" autoencoder input""" 
-os.chdir(path)
+#%% autoencoder input0
 
 model_ae_input_1 = G_z_train
 model_ae_input_2 = [simulate_train_z[i][j] for i in range(0,len(simulate_train_z)) for j in range(0,3)]
@@ -493,8 +462,7 @@ G_test_code = np.array([[G_test_code_t1[i],G_test_code_t[i]] for i in range(0,te
 simulate_test_code = all_test_code[test_len*2:,:]
 simulate_test_code = np.array([simulate_test_code[i*3:i*3+3,:] for i in range(0,test_len)])
 
-#%%
-""" Deep learning forecast model """ 
+#%% Deep learning forecast model
 
 g1_station_num =33
 model_train_input_3 = G_train_code
@@ -506,7 +474,6 @@ model_test_input_4 = simulate_test_code
 specific_station_no=[1,4,5,7,20]
 all_performance=[]; all_predict_train=[]; all_predict_test=[]
 for station_no in range(0,g1_station_num):
-# for station_no in specific_station_no:
     K.clear_session()
     model_train_input_1 = G_train_input[:,:,station_no]
     model_train_input_2 = simulate_merge_train[:,:,station_no]
@@ -537,11 +504,9 @@ for station_no in range(0,g1_station_num):
     model=LSTM_model(timestep)
     earlystopper = EarlyStopping(monitor='val_loss', patience=30, verbose=0)        
     save_path=r"model\1st_layer\lstm(station%s).hdf5"%(station_no)
-    # save_path=r"model\calculation\hbv-ae-lstm(station%s).hdf5"%(station_no)
 
     checkpoint =ModelCheckpoint(save_path,save_best_only=True)
     callback_list=[earlystopper,checkpoint] 
-    # if station_no in specific_station_no:
         
     #normalize_output
     train_output_max=np.max(model_train_output)
@@ -559,7 +524,6 @@ for station_no in range(0,g1_station_num):
     
     
     """ model performance evaluation """ 
-    
     train_R2=[];train_rmse=[]; test_R2=[];test_rmse=[]
     for i in range(0,pred_train.shape[1]):
         train_R2.append(error_indicator.np_R2(model_train_output[:,i],pred_train[:,i]))
@@ -577,8 +541,7 @@ for station_no in range(0,g1_station_num):
     all_predict_train.append(pred_train)
     all_predict_test.append(pred_test)
     
-#%%
-""" arrange model performance evaluation """ 
+#%% arrange model performance evaluation and save into excel
 
 pred_train_1=pd.DataFrame([all_predict_train[i][:,0] for i in range(0,len(all_predict_train))]).T
 pred_test_1=pd.DataFrame([all_predict_test[i][:,0] for i in range(0,len(all_predict_test))]).T

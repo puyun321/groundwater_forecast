@@ -6,13 +6,12 @@ Created on Tue Oct  4 13:58:16 2022
 """
 
 import os
-path=r'D:\important\research\groundwater_forecast(monthly)'
-os.chdir(path)
+os.chdir(os.path.dirname(__file__))
+
+#%% level 1
 import pandas as pd
 import numpy as np
 
-#%%
-#level 1
 g1_train=pd.read_excel(r"result\1st_layer\simulate-shuffle(train).xlsx",sheet_name="groundwater_observation(t+1)",index_col=0)
 g1_test=pd.read_excel(r"result\1st_layer\simulate-shuffle(test).xlsx",sheet_name="groundwater_observation(t+1)",index_col=0)
 station_info = pd.read_excel(r"station_info\station_fullinfo.xlsx",sheet_name="G1",index_col=0)
@@ -33,9 +32,7 @@ station_info_=station_info.reset_index()
 station_info_=station_info_.sort_values(by=[0,'index']).reset_index(drop=True)
 
 
-#%%
-
-#level 2
+#%% level 2
 g2_train=pd.read_excel(r"result\2nd_layer\simulate-shuffle(train).xlsx",sheet_name="groundwater_observation(t+1)",index_col=0)
 g2_test=pd.read_excel(r"result\2nd_layer\simulate-shuffle(test).xlsx",sheet_name="groundwater_observation(t+1)",index_col=0)
 station_info = pd.read_excel(r"station_info\station_fullinfo.xlsx",sheet_name="G2",index_col=0)
