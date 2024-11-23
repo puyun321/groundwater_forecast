@@ -1,4 +1,4 @@
-# grounwater_forecast
+# groundwater_forecast
 ```
 此專案内各個檔案之敘述
 1. Daily-based data 為日資料，内有地下水、流量以及雨量資料
